@@ -1,0 +1,2036 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QMobility KB — Call Center Intelligence v4</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+Arabic:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ===== DESIGN TOKENS ===== */
+:root {
+  --bg:#0b0d10;--surface:#13161b;--surface2:#191d24;--surface3:#1f242e;--surface4:#252b38;
+  --border:rgba(255,255,255,.07);--border2:rgba(255,255,255,.13);--border3:rgba(255,255,255,.2);
+  --text:#edf0f4;--text2:#8b96a8;--text3:#556070;--text4:#3d4a58;
+  --accent:#1a6dff;--accent-h:#0055dd;--accent-glow:rgba(26,109,255,.18);
+  --green:#0fcf7e;--green-bg:rgba(15,207,126,.1);--green-border:rgba(15,207,126,.25);
+  --amber:#f59e0b;--amber-bg:rgba(245,158,11,.1);--amber-border:rgba(245,158,11,.25);
+  --red:#ef4444;--red-bg:rgba(239,68,68,.1);--red-border:rgba(239,68,68,.25);
+  --blue:#3b82f6;--blue-bg:rgba(59,130,246,.1);--blue-border:rgba(59,130,246,.25);
+  --purple:#8b5cf6;--purple-bg:rgba(139,92,246,.1);--purple-border:rgba(139,92,246,.25);
+  --teal:#14b8a6;--teal-bg:rgba(20,184,166,.1);--teal-border:rgba(20,184,166,.25);
+  --mawaqif:#0fcf7e;--darb:#3b82f6;--freeflow:#8b5cf6;
+  --sidebar-w:248px;--r:8px;--r2:12px;--r3:16px;
+  --font:'Inter',sans-serif;--mono:'JetBrains Mono',monospace;--arabic:'Noto Sans Arabic',sans-serif;
+}
+[data-theme="light"] {
+  --bg:#f0f2f6;--surface:#ffffff;--surface2:#f5f7fb;--surface3:#eaecf3;--surface4:#dde1ee;
+  --border:rgba(0,0,0,.08);--border2:rgba(0,0,0,.14);--border3:rgba(0,0,0,.22);
+  --text:#111827;--text2:#4b5563;--text3:#9ca3af;--text4:#d1d5db;
+  --accent:#1a6dff;--accent-h:#0055dd;--accent-glow:rgba(26,109,255,.12);
+  --green:#059669;--green-bg:rgba(5,150,105,.08);--green-border:rgba(5,150,105,.2);
+  --amber:#d97706;--amber-bg:rgba(217,119,6,.08);--amber-border:rgba(217,119,6,.2);
+  --red:#dc2626;--red-bg:rgba(220,38,38,.08);--red-border:rgba(220,38,38,.2);
+  --blue:#2563eb;--blue-bg:rgba(37,99,235,.08);--blue-border:rgba(37,99,235,.2);
+  --purple:#7c3aed;--purple-bg:rgba(124,58,237,.08);--purple-border:rgba(124,58,237,.2);
+  --teal:#0d9488;--teal-bg:rgba(13,148,136,.08);--teal-border:rgba(13,148,136,.2);
+  --mawaqif:#059669;--darb:#2563eb;--freeflow:#7c3aed;
+}
+
+/* ===== RESET ===== */
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden}
+body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:13px;line-height:1.5}
+[dir="rtl"] body,[dir="rtl"]{font-family:var(--arabic),var(--font)}
+
+/* ===== LAYOUT ===== */
+.app{display:flex;height:100vh;overflow:hidden}
+.sidebar{width:var(--sidebar-w);flex-shrink:0;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;transition:width .2s}
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
+
+/* ===== LOGO ===== */
+.logo{padding:14px 12px 12px;border-bottom:1px solid var(--border);flex-shrink:0}
+.logo-img{width:110px;height:auto;display:block}
+.logo-sub{font-size:10px;color:var(--text3);margin-top:4px;letter-spacing:.03em}
+
+/* ===== SIDEBAR NAV ===== */
+.nav-scroll{flex:1;overflow-y:auto;padding:8px 0 16px}
+.nav-scroll::-webkit-scrollbar{width:3px}.nav-scroll::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+.nav-label{font-size:10px;font-weight:600;color:var(--text3);letter-spacing:.1em;text-transform:uppercase;padding:10px 12px 3px;margin-top:4px}
+.nav-label:first-child{margin-top:0}
+.nav-item{display:flex;align-items:center;gap:7px;padding:5.5px 12px;cursor:pointer;color:var(--text2);font-size:12px;font-weight:400;transition:all .15s;border-left:2px solid transparent;user-select:none;position:relative;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nav-item:hover{background:var(--surface2);color:var(--text)}
+.nav-item.active{background:var(--accent-glow);color:var(--accent);border-left-color:var(--accent);font-weight:500}
+[dir="rtl"] .nav-item{border-left:none;border-right:2px solid transparent}
+[dir="rtl"] .nav-item.active{border-left:none;border-right-color:var(--accent)}
+.nav-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.nav-badge{font-size:9px;font-weight:600;padding:1px 5px;border-radius:10px;background:var(--red);color:#fff;margin-left:auto;flex-shrink:0}
+/* collapsible nav groups */
+.nav-group-toggle{display:flex;align-items:center;gap:7px;padding:5.5px 12px;cursor:pointer;color:var(--text2);font-size:12px;font-weight:500;transition:all .15s;user-select:none}
+.nav-group-toggle:hover{background:var(--surface2);color:var(--text)}
+.nav-group-toggle .arrow{margin-left:auto;font-size:10px;transition:transform .2s;flex-shrink:0}
+.nav-group-toggle.open .arrow{transform:rotate(90deg)}
+[dir="rtl"] .nav-group-toggle .arrow{margin-left:0;margin-right:auto}
+.nav-sub{padding-left:8px;display:none}
+.nav-sub.open{display:block}
+[dir="rtl"] .nav-sub{padding-left:0;padding-right:8px}
+.nav-sub .nav-item{font-size:11.5px;padding:4.5px 12px}
+
+/* ===== HEADER ===== */
+.header{padding:10px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--surface);flex-shrink:0;gap:12px}
+.header-left{display:flex;align-items:center;gap:10px;min-width:0}
+.breadcrumb{font-size:11px;color:var(--text3);white-space:nowrap}
+.breadcrumb span{color:var(--text2)}
+.header-title{font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.header-right{display:flex;gap:6px;align-items:center;flex-shrink:0}
+.hbtn{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);padding:6px 10px;font-size:11px;font-weight:500;cursor:pointer;color:var(--text2);font-family:var(--font);transition:all .15s;white-space:nowrap}
+.hbtn:hover{color:var(--text);border-color:var(--border2)}
+.hbtn.active-mode{background:var(--accent-glow);color:var(--accent);border-color:rgba(26,109,255,.3)}
+.search-wrap{position:relative;flex:1;max-width:360px}
+.global-search{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);color:var(--text);font-family:var(--font);font-size:12px;padding:7px 10px 7px 30px;outline:none;transition:all .2s}
+.global-search:focus{border-color:var(--accent);background:var(--surface)}
+.global-search::placeholder{color:var(--text3)}
+.search-icon{position:absolute;left:9px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:13px;pointer-events:none}
+[dir="rtl"] .search-icon{left:auto;right:9px}
+[dir="rtl"] .global-search{padding:7px 30px 7px 10px}
+
+/* ===== CONTENT ===== */
+.content{flex:1;overflow-y:auto;padding:18px 20px}
+.content::-webkit-scrollbar{width:5px}.content::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+
+/* ===== SEARCH OVERLAY ===== */
+.search-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:1000;padding:80px 20px 20px;backdrop-filter:blur(4px)}
+.search-overlay.on{display:block}
+.search-box{background:var(--surface);border:1px solid var(--border2);border-radius:var(--r3);max-width:680px;margin:0 auto;overflow:hidden;max-height:calc(100vh - 120px);display:flex;flex-direction:column}
+.search-input-row{display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--border)}
+.search-input-big{flex:1;background:transparent;border:none;color:var(--text);font-family:var(--font);font-size:16px;outline:none}
+.search-input-big::placeholder{color:var(--text3)}
+.search-close{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:4px 8px;font-size:11px;color:var(--text2);cursor:pointer;font-family:var(--font)}
+.search-filters{display:flex;gap:5px;padding:10px 16px;border-bottom:1px solid var(--border);flex-wrap:wrap}
+.sf{font-size:11px;padding:3px 9px;border-radius:20px;border:1px solid var(--border);color:var(--text3);cursor:pointer;transition:all .15s;background:transparent;font-family:var(--font)}
+.sf:hover,.sf.on{background:var(--accent-glow);color:var(--accent);border-color:rgba(26,109,255,.3)}
+.search-results{flex:1;overflow-y:auto;padding:10px 0}
+.search-result-item{padding:10px 16px;cursor:pointer;border-left:2px solid transparent;transition:all .15s}
+.search-result-item:hover{background:var(--surface2);border-left-color:var(--accent)}
+.sr-breadcrumb{font-size:10px;color:var(--text3);margin-bottom:3px;text-transform:uppercase;letter-spacing:.07em}
+.sr-title{font-size:13px;font-weight:500;color:var(--text);margin-bottom:3px}
+.sr-snippet{font-size:11px;color:var(--text2);line-height:1.5}
+mark{background:rgba(245,158,11,.25);color:var(--amber);border-radius:2px;padding:0 2px}
+.search-empty{padding:40px 16px;text-align:center;color:var(--text3);font-size:13px}
+.search-section-label{font-size:10px;font-weight:600;color:var(--text3);letter-spacing:.1em;text-transform:uppercase;padding:6px 16px;margin-top:4px}
+
+/* ===== BADGES ===== */
+.badge{font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;white-space:nowrap}
+.bM{background:var(--green-bg);color:var(--mawaqif);border:1px solid var(--green-border)}
+.bD{background:var(--blue-bg);color:var(--darb);border:1px solid var(--blue-border)}
+.bF{background:var(--purple-bg);color:var(--freeflow);border:1px solid var(--purple-border)}
+.bG{background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-border)}
+.bR{background:var(--red-bg);color:var(--red);border:1px solid var(--red-border)}
+.bN{background:var(--red-bg);color:var(--red);border:1px solid var(--red-border);font-size:9px}
+
+/* ===== SECTION HEADER ===== */
+.sh{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;gap:10px}
+.st{font-size:15px;font-weight:600;line-height:1.3}
+.sc{font-size:11px;color:var(--text3)}
+
+/* ===== CARDS ===== */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px;margin-bottom:16px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r2);padding:13px 14px;cursor:pointer;transition:all .18s}
+.card:hover{border-color:var(--border2);background:var(--surface2);transform:translateY(-1px)}
+.card-head{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:7px;gap:8px}
+.card-title{font-size:12.5px;font-weight:500;line-height:1.4}
+.card-body{font-size:11.5px;color:var(--text2);line-height:1.6}
+
+/* ===== ACCORDION ===== */
+.acc{background:var(--surface);border:1px solid var(--border);border-radius:var(--r2);margin-bottom:7px;overflow:hidden}
+.acc-head{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;cursor:pointer;user-select:none;transition:background .15s;gap:10px}
+.acc-head:hover{background:var(--surface2)}
+.acc-q{font-size:12.5px;font-weight:500;line-height:1.4;flex:1}
+.acc-meta{display:flex;align-items:center;gap:6px;flex-shrink:0}
+.acc-arr{font-size:10px;color:var(--text3);flex-shrink:0;transition:transform .2s}
+.acc-arr.open{transform:rotate(90deg)}
+.acc-body{display:none;padding:0 14px 13px;font-size:12.5px;color:var(--text2);line-height:1.7;border-top:1px solid var(--border)}
+.acc-body.on{display:block;padding-top:11px}
+.acc-id{font-size:9px;font-weight:600;color:var(--text4);font-family:var(--mono)}
+
+/* ===== FAQ ANSWER STYLES (imported from FAQ source) ===== */
+.faq-answer{font-size:12.5px;line-height:1.7;color:var(--text2)}
+.faq-answer h3{font-size:13px;font-weight:600;color:var(--text);margin:14px 0 6px;padding-bottom:4px;border-bottom:1px solid var(--border)}
+.faq-answer h4{font-size:12px;font-weight:600;color:var(--text);margin:12px 0 5px}
+.faq-answer p{margin:6px 0}
+.faq-answer ul,.faq-answer ol{margin:6px 0 10px 0;padding-left:18px}
+.faq-answer li{margin:3px 0}
+.faq-answer table{width:100%;border-collapse:collapse;margin:10px 0;font-size:12px}
+.faq-answer th{background:var(--surface3);color:var(--text);padding:8px 10px;text-align:left;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.05em}
+.faq-answer td{padding:7px 10px;border-bottom:1px solid var(--border);color:var(--text2)}
+.faq-answer tr:hover td{background:var(--surface2)}
+.faq-answer strong,.faq-answer .amount{color:var(--text);font-weight:600}
+.faq-answer a{color:var(--accent);text-decoration:none}
+.faq-answer a:hover{text-decoration:underline}
+.faq-answer .highlight{background:var(--blue-bg);border-left:3px solid var(--accent);padding:8px 12px;margin:8px 0;border-radius:0 var(--r) var(--r) 0}
+.faq-answer .info-box{background:var(--amber-bg);border:1px solid var(--amber-border);padding:8px 12px;border-radius:var(--r);margin:8px 0;font-size:12px;color:var(--text2)}
+.faq-answer .footer{display:none}/* hide FAQ source footers in KB context */
+
+/* ===== TABLES ===== */
+.tbl-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--r2);overflow:hidden;margin-bottom:14px}
+table.tbl{width:100%;border-collapse:collapse}
+table.tbl th{font-size:10.5px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;padding:8px 12px;border-bottom:1px solid var(--border);text-align:left;background:var(--surface2)}
+table.tbl td{padding:8px 12px;border-bottom:1px solid var(--border);font-size:12px;color:var(--text2)}
+table.tbl tr:last-child td{border-bottom:none}
+table.tbl tr:hover td{background:var(--surface2)}
+table.tbl td:first-child{color:var(--text);font-weight:500}
+
+/* ===== ALERT BOXES ===== */
+.info-box{background:var(--blue-bg);border:1px solid var(--blue-border);border-radius:var(--r);padding:10px 12px;font-size:12px;color:var(--text2);line-height:1.6;margin-bottom:12px}
+.warn-box{background:var(--amber-bg);border:1px solid var(--amber-border);border-radius:var(--r);padding:10px 12px;font-size:12px;color:var(--text2);line-height:1.6;margin-bottom:12px}
+.success-box{background:var(--green-bg);border:1px solid var(--green-border);border-radius:var(--r);padding:10px 12px;font-size:12px;color:var(--text2);line-height:1.6;margin-bottom:12px}
+.danger-box{background:var(--red-bg);border:1px solid var(--red-border);border-radius:var(--r);padding:10px 12px;font-size:12px;color:var(--text2);line-height:1.6;margin-bottom:12px}
+
+/* ===== SCRIPTS ===== */
+.sblock{background:var(--surface);border:1px solid var(--border);border-radius:var(--r2);padding:14px;margin-bottom:10px}
+.stitle{font-size:13px;font-weight:500;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.sexch{display:flex;gap:8px;margin-bottom:7px}
+.srole{font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;min-width:68px;padding-top:2px;flex-shrink:0}
+.srole.c{color:var(--darb)}.srole.a{color:var(--mawaqif)}
+.stext{font-size:12.5px;color:var(--text);line-height:1.65;flex:1}
+
+/* ===== EMAIL/COPY ===== */
+pre.email{font-family:var(--font);font-size:12px;color:var(--text2);line-height:1.7;white-space:pre-wrap;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;margin-top:8px}
+.copy-btn{background:transparent;border:1px solid var(--border);border-radius:6px;color:var(--text3);font-size:11px;padding:4px 10px;cursor:pointer;transition:all .15s;font-family:var(--font);white-space:nowrap}
+.copy-btn:hover{color:var(--text);border-color:var(--border2);background:var(--surface3)}
+.copy-btn.copied{color:var(--green);border-color:var(--green-border);background:var(--green-bg)}
+
+/* ===== SMS ROW ===== */
+.sms-row{display:grid;grid-template-columns:1fr 1fr auto auto;gap:10px;align-items:start;padding:10px 12px;border-bottom:1px solid var(--border)}
+.sms-row:last-child{border-bottom:none}
+.sms-scenario{font-size:12px;font-weight:500;color:var(--text)}
+.sms-desc{font-size:11.5px;color:var(--text3);line-height:1.5}
+.sms-copyable{font-family:var(--mono);font-size:11px;color:var(--text2);background:var(--surface3);border:1px solid var(--border);border-radius:6px;padding:6px 9px;word-break:break-all;line-height:1.5}
+.sms-actions{display:flex;flex-direction:column;gap:5px;align-items:flex-end}
+
+/* ===== DASHBOARD ===== */
+.dash-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;margin-bottom:16px}
+.dash-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r2);padding:11px 13px;cursor:pointer;transition:all .16s;display:flex;flex-direction:column;gap:4px}
+.dash-card:hover{border-color:var(--border2);transform:translateY(-1px)}
+.dash-card-label{font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.08em}
+.dash-card-title{font-size:12.5px;font-weight:500;color:var(--text);line-height:1.3}
+.dash-card-meta{font-size:11px;color:var(--text3)}
+
+/* contact table in dashboard */
+.contact-table{width:100%;border-collapse:collapse}
+.contact-table tr{border-bottom:1px solid var(--border)}
+.contact-table tr:last-child{border-bottom:none}
+.contact-table td{padding:8px 12px;font-size:12px}
+.contact-table td:first-child{color:var(--text2);width:50%}
+.contact-table td:last-child{color:var(--accent);font-weight:500;font-family:var(--mono)}
+
+/* ===== UPDATES ===== */
+.update-item{background:var(--surface);border:1px solid var(--border);border-radius:var(--r2);padding:13px 14px;margin-bottom:9px;border-left-width:3px;border-left-style:solid}
+.update-title{font-size:13px;font-weight:500;margin-bottom:5px;display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+.update-body{font-size:12px;color:var(--text2);line-height:1.7;white-space:pre-wrap}
+
+/* ===== PINNED / RECENT ===== */
+.pill{display:inline-flex;align-items:center;gap:5px;font-size:11px;padding:4px 9px;background:var(--surface2);border:1px solid var(--border);border-radius:20px;cursor:pointer;color:var(--text2);transition:all .15s;margin:2px}
+.pill:hover{background:var(--surface3);color:var(--text)}
+.pin-btn{background:transparent;border:none;font-size:12px;cursor:pointer;color:var(--text3);padding:2px 4px;transition:color .15s}
+.pin-btn:hover,.pin-btn.pinned{color:var(--amber)}
+
+/* ===== ADMIN ===== */
+.admin-bar{background:linear-gradient(135deg,rgba(245,158,11,.08),rgba(239,68,68,.08));border:1px solid var(--amber-border);border-radius:var(--r2);padding:10px 14px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.admin-label{font-size:11px;font-weight:600;color:var(--amber)}
+.admin-edit-btn{background:var(--amber-bg);border:1px solid var(--amber-border);border-radius:6px;padding:4px 10px;font-size:11px;color:var(--amber);cursor:pointer;font-family:var(--font)}
+.admin-form{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r2);padding:14px;margin-bottom:12px}
+.admin-form label{display:block;font-size:11px;color:var(--text3);margin-bottom:4px;font-weight:500}
+.admin-input,.admin-textarea{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:var(--font);font-size:12.5px;padding:8px 10px;outline:none;margin-bottom:10px;transition:border-color .2s}
+.admin-input:focus,.admin-textarea:focus{border-color:var(--accent)}
+.admin-textarea{resize:vertical;min-height:90px}
+.admin-btns{display:flex;gap:8px}
+.btn-primary{background:var(--accent);color:#fff;border:none;border-radius:6px;padding:7px 14px;font-size:12px;font-weight:500;cursor:pointer;font-family:var(--font);transition:background .15s}
+.btn-primary:hover{background:var(--accent-h)}
+.btn-danger{background:var(--red-bg);color:var(--red);border:1px solid var(--red-border);border-radius:6px;padding:7px 14px;font-size:12px;cursor:pointer;font-family:var(--font)}
+.btn-sec{background:var(--surface3);color:var(--text2);border:1px solid var(--border);border-radius:6px;padding:7px 14px;font-size:12px;cursor:pointer;font-family:var(--font)}
+
+/* ===== LOGIN MODAL ===== */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:2000;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(6px)}
+.modal-bg.hidden{display:none!important}
+.modal{background:var(--surface);border:1px solid var(--border2);border-radius:var(--r3);padding:28px;width:340px;max-width:90vw}
+.modal h2{font-size:16px;font-weight:600;margin-bottom:4px}
+.modal p{font-size:12px;color:var(--text2);margin-bottom:18px}
+.modal-input{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);color:var(--text);font-family:var(--font);font-size:13px;padding:9px 12px;outline:none;margin-bottom:10px;transition:border-color .2s}
+.modal-input:focus{border-color:var(--accent)}
+.modal-btns{display:flex;gap:8px;margin-top:4px}
+.modal-err{font-size:11px;color:var(--red);margin-bottom:8px;display:none}
+.modal-err.on{display:block}
+
+/* ===== TOAST ===== */
+.toast{position:fixed;bottom:24px;right:24px;background:var(--surface);border:1px solid var(--border2);border-radius:var(--r);padding:10px 16px;font-size:12px;font-weight:500;color:var(--text);z-index:3000;transform:translateY(60px);opacity:0;transition:all .3s;pointer-events:none}
+.toast.on{transform:translateY(0);opacity:1}
+.toast.ok{border-color:var(--green-border);color:var(--green)}
+.toast.err{border-color:var(--red-border);color:var(--red)}
+[dir="rtl"] .toast{right:auto;left:24px}
+
+/* ===== SUB NAV TABS ===== */
+.sub-tabs{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:14px}
+.sub-tab{padding:5px 12px;border-radius:20px;font-size:11.5px;font-weight:500;cursor:pointer;border:1px solid var(--border);color:var(--text2);background:transparent;transition:all .15s;font-family:var(--font)}
+.sub-tab:hover{background:var(--surface2);color:var(--text)}
+.sub-tab.active{font-weight:600}
+.sub-tab.maw{background:var(--green-bg);color:var(--mawaqif);border-color:var(--green-border)}
+.sub-tab.darb{background:var(--blue-bg);color:var(--darb);border-color:var(--blue-border)}
+.sub-tab.free{background:var(--purple-bg);color:var(--freeflow);border-color:var(--purple-border)}
+.sub-tab.gen{background:var(--amber-bg);color:var(--amber);border-color:var(--amber-border)}
+
+/* ===== SPINNER ===== */
+.spin{display:inline-block;width:12px;height:12px;border:2px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:sp .7s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+
+/* ===== MISC ===== */
+hr.divider{border:none;border-top:1px solid var(--border);margin:16px 0}
+.empty-state{text-align:center;padding:48px 20px;color:var(--text3);font-size:13px}
+.link-btn{color:var(--accent);font-size:11.5px;text-decoration:none;display:inline-flex;align-items:center;gap:4px}
+.link-btn:hover{text-decoration:underline}
+.mono{font-family:var(--mono);font-size:11.5px}
+.text-green{color:var(--green)}.text-red{color:var(--red)}.text-amber{color:var(--amber)}.text-blue{color:var(--darb)}
+</style>
+</head>
+<body>
+
+<!-- ADMIN LOGIN MODAL -->
+<div class="modal-bg hidden" id="loginModal">
+  <div class="modal">
+    <h2>🔐 Admin Access</h2>
+    <p>Enter admin credentials to enable edit mode</p>
+    <div class="modal-err" id="loginErr">Incorrect password. Try again.</div>
+    <input class="modal-input" type="text" id="adminUser" placeholder="Username" autocomplete="off">
+    <input class="modal-input" type="password" id="adminPass" placeholder="Password" autocomplete="off">
+    <div class="modal-btns">
+      <button class="btn-primary" onclick="doLogin()">Login</button>
+      <button class="btn-sec" onclick="closeLogin()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- SEARCH OVERLAY -->
+<div class="search-overlay" id="searchOverlay" onclick="closeSearchIfBg(event)">
+  <div class="search-box">
+    <div class="search-input-row">
+      <span style="color:var(--text3);font-size:16px">🔍</span>
+      <input class="search-input-big" id="searchBig" placeholder="Search knowledge base... / ابحث في قاعدة المعرفة" oninput="doSearch(this.value)" onkeydown="searchKeyNav(event)" autocomplete="off">
+      <button class="search-close" onclick="closeSearch()">ESC</button>
+    </div>
+    <div class="search-filters">
+      <button class="sf on" data-f="all" onclick="setFilter('all')">All</button>
+      <button class="sf" data-f="mawaqif" onclick="setFilter('mawaqif')">Mawaqif</button>
+      <button class="sf" data-f="darb" onclick="setFilter('darb')">Darb</button>
+      <button class="sf" data-f="freeflow" onclick="setFilter('freeflow')">Freeflow</button>
+      <button class="sf" data-f="scripts" onclick="setFilter('scripts')">Scripts</button>
+      <button class="sf" data-f="templates" onclick="setFilter('templates')">Templates</button>
+    </div>
+    <div class="search-results" id="searchResults"></div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- APP -->
+<div class="app">
+
+<!-- ===== SIDEBAR ===== -->
+<aside class="sidebar" id="sidebar">
+  <div class="logo">
+    <!-- QMobility Logo SVG (inline, clean reproduction of the Q+MOBILITY logo) -->
+    <svg width="120" height="32" viewBox="0 0 240 64" xmlns="http://www.w3.org/2000/svg" class="logo-img">
+      <!-- Q circle -->
+      <circle cx="28" cy="28" r="20" fill="none" stroke="#1a3caa" stroke-width="7"/>
+      <!-- Q tail -->
+      <line x1="42" y1="42" x2="54" y2="54" stroke="#1a3caa" stroke-width="7" stroke-linecap="round"/>
+      <!-- MOBILITY text -->
+      <!-- M -->
+      <text x="66" y="42" font-family="Arial,sans-serif" font-weight="700" font-size="28" fill="#1a3caa">M</text>
+      <!-- wavy O using path for the green M-wave -->
+      <path d="M103 28 Q110 16 117 28 Q124 40 131 28" fill="none" stroke="#0fcf7e" stroke-width="5.5" stroke-linecap="round"/>
+      <!-- BILITY -->
+      <text x="135" y="42" font-family="Arial,sans-serif" font-weight="700" font-size="28" fill="#1a3caa">BILITY</text>
+    </svg>
+    <div class="logo-sub" id="logoSub">Call Center · Apr 2026</div>
+  </div>
+
+  <div class="nav-scroll" id="navScroll">
+    <div class="nav-label" data-en="MAIN" data-ar="القائمة الرئيسية">MAIN</div>
+    <div class="nav-item active" onclick="go('dashboard',this)" data-en="Dashboard" data-ar="لوحة التحكم"><span class="nav-dot" style="background:var(--green)"></span><span class="nav-text">Dashboard</span></div>
+    <div class="nav-item" onclick="go('quick',this)" data-en="Quick Reference" data-ar="المرجع السريع"><span class="nav-dot" style="background:var(--darb)"></span><span class="nav-text">Quick Reference</span></div>
+    <div class="nav-item" onclick="go('updates',this)" data-en="Latest Updates" data-ar="آخر التحديثات"><span class="nav-dot" style="background:var(--red)"></span><span class="nav-text">Latest Updates</span><span class="nav-badge">NEW</span></div>
+
+    <div class="nav-label" data-en="KNOWLEDGE BASE" data-ar="قاعدة المعرفة">KNOWLEDGE BASE</div>
+    <!-- MAWAQIF -->
+    <div class="nav-group-toggle" onclick="toggleGroup('g-mawaqif',this)">
+      <span class="nav-dot" style="background:var(--mawaqif)"></span><span class="nav-text" data-en="Mawaqif" data-ar="مواقف">Mawaqif</span><span class="arrow">▶</span>
+    </div>
+    <div class="nav-sub" id="g-mawaqif">
+      <div class="nav-item" onclick="go('kb-maw-general',this)"><span class="nav-text" data-en="General Information" data-ar="معلومات عامة">General Information</span></div>
+      <div class="nav-item" onclick="go('kb-maw-fines',this)"><span class="nav-text" data-en="Fines & Grievances" data-ar="المخالفات والتظلمات">Fines &amp; Grievances</span></div>
+      <div class="nav-item" onclick="go('kb-maw-permits',this)"><span class="nav-text" data-en="Permits" data-ar="التصاريح">Permits</span></div>
+      <div class="nav-item" onclick="go('kb-maw-public',this)"><span class="nav-text" data-en="Public Parking Payment" data-ar="الدفع العام">Public Parking Payment</span></div>
+      <div class="nav-item" onclick="go('kb-maw-inspection',this)"><span class="nav-text" data-en="Parking Inspection" data-ar="مراقبة الوقوف">Parking Inspection</span></div>
+      <div class="nav-item" onclick="go('kb-maw-impound',this)"><span class="nav-text" data-en="Car Pound / Impound" data-ar="حجز المركبات">Car Pound / Impound</span></div>
+      <div class="nav-item" onclick="go('kb-maw-mscp',this)"><span class="nav-text" data-en="Multi-Storey (MSCP)" data-ar="مواقف متعددة الطوابق">Multi-Storey (MSCP)</span></div>
+      <div class="nav-item" onclick="go('kb-maw-private',this)"><span class="nav-text" data-en="Private Parking (ADM)" data-ar="مواقف خاصة">Private Parking (ADM)</span></div>
+      <div class="nav-item" onclick="go('kb-maw-mbz',this)"><span class="nav-text" data-en="MBZ City Updates" data-ar="تحديثات MBZ">MBZ City Updates</span></div>
+      <div class="nav-item" onclick="go('kb-maw-parking-sms',this)"><span class="nav-text" data-en="Public Parking SMS" data-ar="SMS الوقوف">Public Parking SMS</span></div>
+    </div>
+    <!-- DARB -->
+    <div class="nav-group-toggle" onclick="toggleGroup('g-darb',this)">
+      <span class="nav-dot" style="background:var(--darb)"></span><span class="nav-text" data-en="Darb" data-ar="درب">Darb</span><span class="arrow">▶</span>
+    </div>
+    <div class="nav-sub" id="g-darb">
+      <div class="nav-item" onclick="go('kb-darb-general',this)"><span class="nav-text" data-en="General Information" data-ar="معلومات عامة">General Information</span></div>
+      <div class="nav-item" onclick="go('kb-darb-reg',this)"><span class="nav-text" data-en="Registration &amp; Account" data-ar="التسجيل والحساب">Registration &amp; Account</span></div>
+      <div class="nav-item" onclick="go('kb-darb-toll',this)"><span class="nav-text" data-en="Toll / Wallet / Payments" data-ar="الرسوم والمحفظة">Toll / Wallet / Payments</span></div>
+      <div class="nav-item" onclick="go('kb-darb-exempt',this)"><span class="nav-text" data-en="Exemptions" data-ar="الإعفاءات">Exemptions</span></div>
+      <div class="nav-item" onclick="go('kb-darb-disputes',this)"><span class="nav-text" data-en="Violations &amp; Grievances" data-ar="المخالفات والتظلمات">Violations &amp; Grievances</span></div>
+      <div class="nav-item" onclick="go('kb-darb-ghantout',this)"><span class="nav-text" data-en="Ghantout Gate" data-ar="بوابة غنتوت">Ghantout Gate</span></div>
+    </div>
+    <!-- FREEFLOW -->
+    <div class="nav-group-toggle" onclick="toggleGroup('g-freeflow',this)">
+      <span class="nav-dot" style="background:var(--freeflow)"></span><span class="nav-text" data-en="Freeflow" data-ar="بدون حواجز">Freeflow</span><span class="arrow">▶</span>
+    </div>
+    <div class="nav-sub" id="g-freeflow">
+      <div class="nav-item" onclick="go('kb-ff-general',this)"><span class="nav-text" data-en="How Freeflow Works" data-ar="كيف يعمل">How Freeflow Works</span></div>
+      <div class="nav-item" onclick="go('kb-ff-locations',this)"><span class="nav-text" data-en="Locations" data-ar="المواقع">Locations</span></div>
+      <div class="nav-item" onclick="go('kb-ff-faq',this)"><span class="nav-text" data-en="Freeflow FAQ" data-ar="الأسئلة الشائعة">Freeflow FAQ</span></div>
+    </div>
+
+    <!-- REFERENCE -->
+    <div class="nav-label" data-en="REFERENCE" data-ar="المراجع">REFERENCE</div>
+    <div class="nav-item" onclick="go('kb-fines',this)"><span class="nav-dot" style="background:var(--red)"></span><span class="nav-text" data-en="Fines Table" data-ar="جدول المخالفات">Fines Table</span></div>
+    <div class="nav-item" onclick="go('kb-permits',this)"><span class="nav-dot" style="background:var(--amber)"></span><span class="nav-text" data-en="Permits Reference" data-ar="مرجع التصاريح">Permits Reference</span></div>
+    <div class="nav-item" onclick="go('vehicle-types',this)"><span class="nav-dot" style="background:var(--teal)"></span><span class="nav-text" data-en="Vehicle Types" data-ar="أنواع المركبات">Vehicle Types</span></div>
+
+    <div class="nav-label" data-en="VOICE SCRIPTS" data-ar="نصوص المكالمات">VOICE SCRIPTS</div>
+    <div class="nav-group-toggle" onclick="toggleGroup('g-vmaw',this)">
+      <span class="nav-dot" style="background:var(--mawaqif)"></span><span class="nav-text" data-en="Mawaqif Scripts" data-ar="نصوص مواقف">Mawaqif Scripts</span><span class="arrow">▶</span>
+    </div>
+    <div class="nav-sub" id="g-vmaw">
+      <div class="nav-item" onclick="go('v-maw-fines',this)"><span class="nav-text" data-en="Fines &amp; Grievances" data-ar="المخالفات">Fines &amp; Grievances</span></div>
+      <div class="nav-item" onclick="go('v-maw-permits',this)"><span class="nav-text" data-en="Permits" data-ar="التصاريح">Permits</span></div>
+      <div class="nav-item" onclick="go('v-maw-impound',this)"><span class="nav-text" data-en="Impoundment" data-ar="الحجز">Impoundment</span></div>
+    </div>
+    <div class="nav-group-toggle" onclick="toggleGroup('g-vdarb',this)">
+      <span class="nav-dot" style="background:var(--darb)"></span><span class="nav-text" data-en="Darb Scripts" data-ar="نصوص درب">Darb Scripts</span><span class="arrow">▶</span>
+    </div>
+    <div class="nav-sub" id="g-vdarb">
+      <div class="nav-item" onclick="go('v-darb-reg',this)"><span class="nav-text" data-en="Registration" data-ar="التسجيل">Registration</span></div>
+      <div class="nav-item" onclick="go('v-darb-wallet',this)"><span class="nav-text" data-en="Wallet &amp; Payments" data-ar="المحفظة">Wallet &amp; Payments</span></div>
+      <div class="nav-item" onclick="go('v-darb-exempt',this)"><span class="nav-text" data-en="Exemptions" data-ar="الإعفاءات">Exemptions</span></div>
+    </div>
+
+    <div class="nav-label" data-en="TEMPLATES" data-ar="القوالب">TEMPLATES</div>
+    <!-- EMAIL TEMPLATES -->
+    <div class="nav-group-toggle" onclick="toggleGroup('g-email',this)">
+      <span class="nav-dot" style="background:var(--teal)"></span><span class="nav-text" data-en="Email Templates" data-ar="قوالب البريد">Email Templates</span><span class="arrow">▶</span>
+    </div>
+    <div class="nav-sub" id="g-email">
+      <div class="nav-item" onclick="go('em-maw',this)"><span class="nav-text" data-en="Mawaqif Email" data-ar="بريد مواقف">Mawaqif Email</span></div>
+      <div class="nav-item" onclick="go('em-darb',this)"><span class="nav-text" data-en="Darb Email" data-ar="بريد درب">Darb Email</span></div>
+    </div>
+    <!-- CHAT TEMPLATES -->
+    <div class="nav-group-toggle" onclick="toggleGroup('g-chat',this)">
+      <span class="nav-dot" style="background:var(--purple)"></span><span class="nav-text" data-en="Chat Templates" data-ar="قوالب الدردشة">Chat Templates</span><span class="arrow">▶</span>
+    </div>
+    <div class="nav-sub" id="g-chat">
+      <div class="nav-item" onclick="go('ch-maw',this)"><span class="nav-text" data-en="Mawaqif Chat" data-ar="دردشة مواقف">Mawaqif Chat</span></div>
+      <div class="nav-item" onclick="go('ch-darb',this)"><span class="nav-text" data-en="Darb Chat" data-ar="دردشة درب">Darb Chat</span></div>
+    </div>
+    <!-- SALESFORCE SMS -->
+    <div class="nav-group-toggle" onclick="toggleGroup('g-sms',this)">
+      <span class="nav-dot" style="background:var(--amber)"></span><span class="nav-text" data-en="Salesforce SMS" data-ar="SMS سيلزفورس">Salesforce SMS</span><span class="arrow">▶</span>
+    </div>
+    <div class="nav-sub" id="g-sms">
+      <div class="nav-item" onclick="go('sms-darb',this)"><span class="nav-text" data-en="Darb Customer Links" data-ar="روابط درب">Darb Customer Links</span></div>
+      <div class="nav-item" onclick="go('sms-impound',this)"><span class="nav-text" data-en="Impounding Yard SMS" data-ar="SMS مواقع الحجز">Impounding Yard SMS</span></div>
+      <div class="nav-item" onclick="go('sms-truck',this)"><span class="nav-text" data-en="Truck &amp; Pick-Up SMS" data-ar="SMS الشاحنات">Truck &amp; Pick-Up SMS</span></div>
+      <div class="nav-item" onclick="go('sms-tamm',this)"><span class="nav-text" data-en="TAMM Application Links" data-ar="روابط تم">TAMM Application Links</span></div>
+      <div class="nav-item" onclick="go('sms-docs',this)"><span class="nav-text" data-en="Documents &amp; Email Ref" data-ar="مراجع المستندات">Documents &amp; Email Ref</span></div>
+      <div class="nav-item" onclick="go('sms-branch',this)"><span class="nav-text" data-en="Branch Locations" data-ar="مواقع الفروع">Branch Locations</span></div>
+      <div class="nav-item" onclick="go('sms-villa',this)"><span class="nav-text" data-en="Villa Permit SMS" data-ar="SMS تصريح الفيلا">Villa Permit SMS</span></div>
+    </div>
+  </div>
+
+  <!-- SIDEBAR BOTTOM -->
+  <div style="padding:10px 12px;border-top:1px solid var(--border);flex-shrink:0">
+    <div style="font-size:10px;color:var(--text3)" id="modeLabel">👁 View Mode</div>
+  </div>
+</aside>
+
+<!-- ===== MAIN ===== -->
+<div class="main">
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-left">
+      <div>
+        <div class="breadcrumb" id="breadcrumb">Main</div>
+        <div class="header-title" id="htitle">Dashboard</div>
+      </div>
+    </div>
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input class="global-search" placeholder="Search... (Ctrl+K)" onclick="openSearch()" readonly>
+    </div>
+    <div class="header-right">
+      <button class="hbtn" onclick="toggleLang()" id="langBtn" title="Switch Language">EN / AR</button>
+      <button class="hbtn" onclick="toggleTheme()" id="themeBtn">☀ Light</button>
+      <button class="hbtn" id="adminBtn" onclick="toggleAdmin()">🔐 Admin</button>
+    </div>
+  </div>
+
+  <!-- CONTENT -->
+  <div class="content" id="content"></div>
+</div>
+</div>
+
+<script>
+// ==================== STATE ====================
+const S = {
+  lang: localStorage.getItem('kb_lang') || 'en',
+  theme: localStorage.getItem('kb_theme') || 'dark',
+  isAdmin: false,
+  currentPage: 'dashboard',
+  pins: JSON.parse(localStorage.getItem('kb_pins')||'[]'),
+  recent: JSON.parse(localStorage.getItem('kb_recent')||'[]'),
+  searchFilter: 'all',
+  adminEdits: JSON.parse(localStorage.getItem('kb_admin_edits')||'{}'),
+};
+const ADMIN_USER = 'admin';
+const ADMIN_PASS = 'QM@2026';
+
+// ==================== INIT THEME/LANG ====================
+document.documentElement.setAttribute('data-theme', S.theme);
+document.getElementById('themeBtn').textContent = S.theme === 'dark' ? '☀ Light' : '🌙 Dark';
+if (S.lang === 'ar') {
+  document.documentElement.setAttribute('dir','rtl');
+  document.documentElement.setAttribute('lang','ar');
+}
+
+// ==================== KNOWLEDGE BASE DATA ====================
+// Centralized FAQ data model
+const KB = {
+  // ---- MAWAQIF GENERAL ----
+  maw_general: [
+    {id:'FAQ-0232',q:'What is Q Mobility?',a:`<p>Q Mobility is a wholly owned subsidiary of ADQ (Abu Dhabi's investment and holding company). It focuses on providing sustainable and integrated smart mobility solutions to enhance the efficiency, reliability, and convenience of transport across the Abu Dhabi emirate. Q Mobility develops and manages key mobility infrastructure including the <strong>Darb</strong> electronic toll system and <strong>Mawaqif</strong> parking management system.</p>`,kw:'qmobility company adq subsidiary'},
+    {id:'FAQ-0231',q:'Who is currently responsible for Mawaqif operations?',a:`<p>Mawaqif parking operations are currently managed by <strong>Q Mobility Company</strong>, a wholly owned subsidiary of ADQ (Abu Dhabi's investment and holding company). Q Mobility assumed responsibility for Mawaqif operations, including parking management, permit issuance, fine enforcement, and customer support across all zones in Abu Dhabi, Al Ain, and surrounding areas.</p>`,kw:'mawaqif operations responsible manager'},
+    {id:'FAQ-0233',q:'What are Q Mobility vision and mission?',a:`<p><strong>Vision:</strong> Redefining urban mobility for a sustainable future.</p><p><strong>Mission:</strong> Delivering best-in-class, digitally enabled mobility experiences to enhance livability.</p>`,kw:'vision mission qmobility'},
+    {id:'FAQ-0234',q:'How can I contact Q Mobility?',a:`<p>Call center: <strong>8003009</strong> (free of charge, 24/7).</p><p>Email: <strong>customers@qmobility.ae</strong></p><p>WhatsApp: <strong>8003009</strong></p>`,kw:'contact phone email qmobility'},
+    {id:'FAQ-0002',q:'What are the operating hours of the Q Mobility call center?',a:`<p>The Q Mobility call center operates <strong>24 hours a day, 7 days a week</strong>, including weekends and public holidays.</p>`,kw:'hours call center operating'},
+    {id:'FAQ-0162',q:'What is Q Mobility call center?',a:`<p>The Q Mobility call center provides support for all Mawaqif parking and Darb toll related inquiries. Agents assist with permits, fines, payments, vehicle registration, exemptions, and general service guidance.</p><p>Number: <strong>8003009</strong> (free)</p>`,kw:'call center support service'},
+    {id:'FAQ-0236',q:'How can I apply for a job with Q Mobility?',a:`<p>Send your CV and cover letter to: <strong>careers@qmobility.ae</strong></p><p>Include the position you are applying for in the subject line. You can also check available positions on LinkedIn by searching for Q Mobility.</p>`,kw:'jobs careers apply hr'},
+    {id:'FAQ-0300',q:'Are there any changes to parking laws or regulations?',a:`<p>Parking regulations in Abu Dhabi are updated periodically. Key recent change: <strong>Paid parking activated in MBZ City (ME10, ME11)</strong> from April 6, 2026. Always check the Darb app or TAMM platform for latest updates, or contact 8003009.</p>`,kw:'changes regulations laws updates'},
+  ],
+
+  // ---- MAWAQIF FINES ----
+  maw_fines: [
+    {id:'FAQ-0328',q:'What are common Mawaqif fine types and amounts?',a:`<table class="tbl"><thead><tr><th>Fine Amount</th><th>Violation</th><th>Towed?</th></tr></thead><tbody>
+<tr><td style="color:var(--amber);font-family:var(--mono)">AED 200</td><td>Not paying parking fee (first offense)</td><td>No</td></tr>
+<tr><td style="color:var(--amber);font-family:var(--mono)">AED 400</td><td>Not paying parking fee (repeat)</td><td>✦ Yes</td></tr>
+<tr><td style="color:var(--amber);font-family:var(--mono)">AED 400</td><td>Parking in disabled space (no permit)</td><td>✦ Yes</td></tr>
+<tr><td style="color:var(--amber);font-family:var(--mono)">AED 400</td><td>Parking in No Parking zone</td><td>✦ Yes</td></tr>
+<tr><td style="color:var(--amber);font-family:var(--mono)">AED 200</td><td>Overstaying time limit</td><td>No</td></tr>
+<tr><td style="color:var(--amber);font-family:var(--mono)">AED 400</td><td>Blocking traffic / fire hydrant</td><td>✦ Yes</td></tr>
+<tr><td style="color:var(--amber);font-family:var(--mono)">AED 200</td><td>Wrong parking area / color zone</td><td>No</td></tr>
+</tbody></table>
+<div class="warn-box">⚠ No black points on Mawaqif fines. No second fine for same reason + same sector + same day. <strong>25% discount</strong> if paid within 60 days.</div>`,kw:'fines amounts violations towing tow penalty'},
+    {id:'FAQ-0039',q:'How can I pay a parking fine?',a:`<p>You can pay your parking fines through:</p><ul><li><strong>Darb App</strong> — Fines section</li><li><strong>TAMM platform</strong> — tamm.ae</li><li><strong>Mawaqif website</strong></li><li><strong>Service center</strong> — with original Emirates ID</li></ul><div class="info-box">💡 Pay within <strong>60 days</strong> of the fine issuance date to receive a <strong>25% discount</strong>.</div>`,kw:'pay fine payment darb tamm'},
+    {id:'FAQ-0194',q:'What happens if I do not pay my parking fine?',a:`<p>Unpaid fines may result in:</p><ul><li>Vehicle impoundment / towing</li><li>Driving license suspension via traffic department (Muroor)</li><li>Vehicle registration renewal blocked</li><li>Court referral for serious violations</li></ul><p>Pay promptly via Darb app or TAMM to avoid escalation.</p>`,kw:'unpaid fine consequence penalty block'},
+    {id:'FAQ-0040',q:'How can I check if I have a parking fine?',a:`<p>You can check outstanding fines through:</p><ul><li><strong>Darb App</strong> → Fines section</li><li><strong>TAMM platform</strong></li><li><strong>Calling 8003009</strong> with your plate number ready</li></ul>`,kw:'check fine verify plate number'},
+    {id:'FAQ-0215',q:'Is there a discount for parking violations?',a:`<p>Yes. A <strong>25% discount</strong> applies if the fine is paid within <strong>60 days</strong> of the fine issuance date. This is the standard grievance/discount period.</p><p>After 60 days, the full amount applies and late payment charges may be added.</p>`,kw:'discount fine 25% 60 days'},
+    {id:'FAQ-0214',q:'How can I inquire and pay parking violations for my vehicle?',a:`<p>Via <strong>Darb App</strong>: Login → Fines → enter plate number.<br>Via <strong>TAMM</strong>: tamm.ae → search by plate or fine number.<br>Via <strong>Call Center</strong>: 8003009 (have plate number ready).</p>`,kw:'inquire pay violations plate'},
+    {id:'FAQ-0316',q:'How to apply for a grievance on Mawaqif fines?',a:`<p>To file a parking fine grievance:</p><ol><li>Log in to <strong>Darb App</strong> or <strong>TAMM platform</strong></li><li>Go to <strong>Fines → Grievance</strong></li><li>Select the fine and submit your objection with supporting evidence (photo/note)</li></ol><p>Grievance review takes up to <strong>7 working days</strong>. You will be notified via SMS.</p>`,kw:'grievance appeal objection fine'},
+    {id:'FAQ-0200',q:'What should I do if I receive a violation notice by mistake?',a:`<p>If you believe a fine was issued incorrectly:</p><ol><li>Do NOT ignore it — it will escalate</li><li>File a grievance through <strong>Darb App</strong> or <strong>TAMM</strong></li><li>Upload supporting evidence (photos, timestamps, receipts)</li></ol><p>If the grievance is accepted, the fine will be cancelled or refunded.</p>`,kw:'wrong fine mistake appeal grievance'},
+    {id:'FAQ-0044',q:'How long does it take to process a grievance?',a:`<p>Parking grievances are processed within <strong>7 working days</strong> from the date of submission. You will receive an SMS notification to your registered mobile number once a decision is made.</p>`,kw:'grievance processing time 7 days'},
+    {id:'FAQ-0045',q:'What happens if my grievance is rejected?',a:`<p>If your grievance is rejected:</p><ul><li>The original fine amount stands</li><li>The 25% discount may still apply if within 60 days of issuance</li><li>You must pay the fine to avoid further consequences</li><li>You may escalate to the relevant department for further review</li></ul>`,kw:'grievance rejected appeal result'},
+    {id:'FAQ-0296',q:'How can I download the account financial transaction history?',a:`<p>Log in to <strong>Darb App</strong> or <strong>darb.qmobility.ae</strong>.</p><p>Go to <strong>Financial Transactions</strong> → select date range → export or download PDF/CSV statement.</p>`,kw:'download transactions history statement financial'},
+  ],
+
+  // ---- MAWAQIF PERMITS ----
+  maw_permits: [
+    {id:'FAQ-0056',q:'How can I apply for a Resident Parking Permit?',a:`<p>Apply through:</p><ul><li><strong>TAMM App</strong> or <strong>tamm.ae</strong></li><li><strong>Darb platform</strong> (darb.qmobility.ae)</li></ul><p><strong>Required documents:</strong></p><ul><li>Tenancy Contract (Tawtheeq)</li><li>3-month electricity bill or ADDC NOC</li><li>Vehicle Registration Card (Mulkiya)</li><li>Emirates ID</li></ul>`,kw:'resident permit apply residential documents'},
+    {id:'FAQ-0201',q:'Who is eligible for a Resident Parking Permit?',a:`<p>Residents with a valid tenancy contract (Tawtheeq) in a paid parking zone are eligible. Both UAE Nationals and expatriates may apply.</p><p>For <strong>villas</strong>, the same documents apply plus proof of villa ownership or lease for the specific zone.</p>`,kw:'eligible resident permit who apply'},
+    {id:'FAQ-0202',q:'What is the payment fee for a resident permit?',a:`<table class="tbl"><thead><tr><th>Customer Type</th><th>1st Vehicle</th><th>2nd–4th Vehicle</th></tr></thead><tbody>
+<tr><td>Expatriate</td><td>AED 800/year (AED 400 / 6 months)</td><td>AED 1,200/year</td></tr>
+<tr><td>UAE National</td><td>Free</td><td>Free</td></tr>
+</tbody></table>`,kw:'permit fee cost AED 800 resident price'},
+    {id:'FAQ-0240',q:'How many vehicle permits can I apply for?',a:`<p>Up to <strong>4 vehicles</strong> per residence (apartment/villa) can be registered under resident permits.</p>`,kw:'how many permits vehicles 4 max'},
+    {id:'FAQ-0239',q:'How many vehicles can be registered under the same apartment?',a:`<p>A maximum of <strong>4 vehicles</strong> may hold active resident permits per apartment unit at any time.</p>`,kw:'apartment vehicles registered same'},
+    {id:'FAQ-0057',q:'How long does it take to receive a resident parking permit?',a:`<p>Processing typically takes <strong>3 working days</strong> once all required documents have been submitted and verified.</p>`,kw:'permit processing time how long days'},
+    {id:'FAQ-0061',q:'How do I renew my Resident Permit?',a:`<p>Renew via <strong>TAMM App/website</strong> or <strong>Darb platform</strong> before expiry. Renewal uses the same documents as the initial application (updated if expired).</p><p><strong>Tip:</strong> Renew at least 30 days before expiry to avoid gaps in coverage.</p>`,kw:'renew permit renewal how to'},
+    {id:'FAQ-0243',q:'Is there a grace period after a permit expires?',a:`<p>There is <strong>no official grace period</strong>. Once a permit expires, the vehicle is no longer covered and is subject to fines. Renew before expiry.</p>`,kw:'grace period permit expires after'},
+    {id:'FAQ-0247',q:"I can't renew my Residence permit. What should I do?",a:`<p>Check for these common issues:</p><ul><li>Expired documents (Tawtheeq, Mulkiya, Emirates ID)</li><li>Permit not showing in renewal section — contact 8003009</li><li>Showing AED 1,200 instead of AED 800 — check if a new permit was issued recently (system resets)</li></ul><p>If the issue persists, call <strong>8003009</strong> or email <strong>customers@qmobility.ae</strong></p>`,kw:'cant renew permit issue error problem'},
+    {id:'FAQ-0248',q:'Why is my resident permit (RP) not showing in the renewal section?',a:`<p>This typically happens when the permit was issued under a different account or TC number. Contact <strong>8003009</strong> and provide your permit number so agents can look it up and assist with renewal.</p>`,kw:'permit not showing renewal section darb tamm'},
+    {id:'FAQ-0250',q:'When I apply for renewal, it shows AED 1,200 instead of AED 800. Why?',a:`<p>This usually occurs when the system reads your application as a <strong>new permit</strong> rather than a renewal. This can happen if:</p><ul><li>The previous permit expired more than 30 days ago</li><li>The vehicle was changed</li><li>The account was re-created</li></ul><p>Contact <strong>8003009</strong> to investigate and correct the fee.</p>`,kw:'1200 instead 800 renewal price wrong fee'},
+    {id:'FAQ-0245',q:'I have sold my vehicle and need to cancel the current permit.',a:`<p>Log in to <strong>Darb platform</strong> or <strong>TAMM</strong> → go to your active permit → select <strong>Cancel Permit</strong>. You can then apply for a new permit for the new vehicle.</p><p>Note: Refunds for unused permit days may apply. Contact 8003009 for refund eligibility.</p>`,kw:'cancel permit sold vehicle cancel how'},
+    {id:'FAQ-0246',q:'I have changed my address. How do I update my residence permit?',a:`<p>If you move to a different area or sector, you must <strong>cancel the existing permit</strong> and apply for a new one at the new address. Permits are tied to the specific sector/address.</p>`,kw:'change address update permit move sector'},
+    {id:'FAQ-0244',q:'If I apply for a new permit now, what happens to the remaining days of my current permit?',a:`<p>When you renew or apply for a new permit, the remaining days from your current permit are <strong>added to the new permit</strong> duration. You do not lose unused days.</p>`,kw:'remaining days permit new renewal carry over'},
+    {id:'FAQ-0253',q:'Can I issue a Residential permit for a Motorcycle?',a:`<p><strong>No.</strong> Motorcycles are not eligible for residential parking permits. Motorcycles are exempt from parking fees in Mawaqif zones.</p>`,kw:'motorcycle permit residential no'},
+    {id:'FAQ-0252',q:'Can I issue a Residential permit for a rented car?',a:`<p><strong>No.</strong> Rental vehicles are not eligible for residential permits. Permits are issued to vehicle owners only.</p>`,kw:'rental rented car permit no'},
+    {id:'FAQ-0254',q:'Can I issue a Residential permit for a yacht, boat or trailer?',a:`<p><strong>No.</strong> Residential parking permits are only available for standard motor vehicles (cars, light pickups, and small vans). Boats, trailers, and non-standard vehicles are excluded.</p>`,kw:'yacht boat trailer permit no'},
+    {id:'FAQ-0019',q:'What is a Limited-Term Permit?',a:`<p>A Limited-Term Permit allows parking in a specific Mawaqif zone for a short, defined period. It is designed for temporary parking needs such as renovation, construction, or short-term business activity.</p>`,kw:'limited term permit short temporary'},
+    {id:'FAQ-0176',q:'How long is a Limited-Term Permit valid for?',a:`<p>Limited-term permits are valid for periods ranging from <strong>1 week to 3 months</strong>, depending on the nature of the request and the sector.</p>`,kw:'limited term permit valid duration how long'},
+    {id:'FAQ-0015',q:'How do I apply for an institution/government permit?',a:`<p>Apply by emailing: <strong>gov.pr@qmobility.ae</strong></p><p>Include:</p><ul><li>Official letter requesting permits</li><li>List of employee names, vehicle numbers, Emirates IDs</li><li>Vehicle registration cards (Mulkiya) for each vehicle</li><li>Work ID cards for each employee</li><li>Kinship proof if required (spouse/family members)</li></ul>`,kw:'government permit institution apply email'},
+    {id:'FAQ-0012',q:'Who can apply for an Institution / Government Permit?',a:`<p>Employees of government institutions and other approved organizations may apply. These permits allow parking in designated areas near their workplace during working hours.</p>`,kw:'government permit who eligible apply'},
+    {id:'FAQ-0294',q:'Which areas and hours are covered by government parking permits?',a:`<p>Government permits cover parking in the <strong>immediate vicinity of the entity's workplace</strong> only.</p><p>Active hours: <strong>8:00 AM to 4:00 PM, Sunday to Thursday</strong></p><p>They do NOT cover residential areas or outside the designated sector.</p>`,kw:'government permit area hours covered sector'},
+    {id:'FAQ-0013',q:'How long are government permits valid for?',a:`<p>Government parking permits are valid for <strong>1 year</strong> from the date of issuance. They must be renewed annually.</p>`,kw:'government permit valid duration 1 year'},
+    {id:'FAQ-0062',q:'What is a Commercial Parking Permit?',a:`<p>A Commercial Permit allows businesses to apply for various permit types including:</p><ul><li>Parking reservation for construction & infrastructure maintenance</li><li>Removal of PDM & Mawaqif signage</li><li>Parking reservation for charity campaigns</li><li>Parking basement extension</li><li>Parking space removal</li><li>Sidewalk use for maintenance purposes</li></ul>`,kw:'commercial permit type business construction'},
+    {id:'FAQ-0063',q:'How do I apply for a Commercial Permit?',a:`<p>Applications are submitted through the <strong>TAMM platform</strong> (tamm.ae).</p>`,kw:'commercial permit apply tamm'},
+    {id:'FAQ-0068',q:'What documents are required for a commercial permit?',a:`<ul><li>Emirates ID</li><li>Trade License</li><li>Additional documentation specific to permit type</li></ul><div class="info-box">Ensure all information is accurate to avoid delays in processing.</div>`,kw:'commercial permit documents required'},
+    {id:'FAQ-0156',q:'What are the commercial permit payment fees?',a:`<table class="tbl"><thead><tr><th>Type</th><th>Fee</th></tr></thead><tbody>
+<tr><td>Application Fee</td><td class="mono text-amber">AED 200</td></tr>
+<tr><td>Government Entity – Daily</td><td class="mono text-amber">AED 55/day</td></tr>
+<tr><td>Government Entity – 6 months</td><td class="mono text-amber">AED 10,000/space</td></tr>
+<tr><td>Government Entity – Annual</td><td class="mono text-amber">AED 20,000/space</td></tr>
+<tr><td>Private Company – Daily</td><td class="mono text-amber">AED 85/day</td></tr>
+<tr><td>Private Company – 6 months</td><td class="mono text-amber">AED 15,000/space</td></tr>
+<tr><td>Private Company – Annual</td><td class="mono text-amber">AED 30,000/space</td></tr>
+</tbody></table>`,kw:'commercial permit fee AED government private'},
+    {id:'FAQ-0255',q:'Can I apply for a residents permit by requesting an exemption through TAMM?',a:`<p>Yes. In cases where standard documentation is not available (e.g., new tenancy contract not yet in Tawtheeq system), you may submit an exemption request via <strong>TAMM</strong> with supporting documents for review by the team.</p>`,kw:'exemption permit tamm request special'},
+    {id:'FAQ-0256',q:'If I do not have all the required documents, what should I do?',a:`<p>You must submit complete documentation to proceed. Incomplete applications are put on hold. Contact <strong>8003009</strong> for guidance on what can be accepted as alternative documentation in your specific case.</p>`,kw:'missing documents permit incomplete what to do'},
+    {id:'FAQ-0326',q:'What exceptions apply to residential parking permits in different sectors?',a:`<p>Exceptions vary by sector. For specific sector rules, contact <strong>8003009</strong> or visit a QMobility service center. Some zones may have visitor SMS capacity limits or sector-specific maximum permit quotas.</p>`,kw:'exceptions permits sector different rules'},
+    {id:'FAQ-0219',q:'How can I define phone numbers of villa visitors through Darb platform?',a:`<p>Log in to Darb platform → select your active Villa permit → go to <strong>Visitor Management</strong> → add visitor phone numbers. Visitors can then send an SMS from that number to receive a temporary parking session.</p>`,kw:'villa visitor sms phone number darb'},
+    {id:'FAQ-0220',q:'What is the maximum number of visitor phone numbers for a residence permit?',a:`<p>A maximum of <strong>5 visitor phone numbers</strong> can be added per residential permit at any one time.</p>`,kw:'maximum visitor phone numbers 5'},
+    {id:'FAQ-0221',q:'Are there conditions for adding visitors phone numbers to a residential permit?',a:`<p>Yes. The visitor phone number must be a valid UAE mobile number. Numbers can be changed but there may be a waiting period before reassigning a slot. Contact 8003009 for specific slot management.</p>`,kw:'visitor phone conditions requirements'},
+    {id:'FAQ-0241',q:'Can a customer send visitor SMS using any active Residence permit?',a:`<p>Yes. A visitor SMS can be sent from any phone number that has been pre-registered under the active residential permit.</p>`,kw:'visitor sms active permit any'},
+    {id:'FAQ-0242',q:'How can a permit holder add additional visitor phone numbers to their permit?',a:`<p>Log in to Darb → navigate to your permit → <strong>Add Visitor Number</strong> → enter the mobile number and save. The number is immediately active.</p>`,kw:'add visitor number permit darb'},
+    {id:'FAQ-0286',q:'What is the People of Determination Parking Permit Inquiry System?',a:`<p>The PoD Inquiry System allows visitors and the public to verify valid PoD permits by checking the permit number or plate. It is available through TAMM and the Darb App.</p>`,kw:'POD people determination permit inquiry system'},
+  ],
+
+  // ---- MAWAQIF PUBLIC PARKING ----
+  maw_public: [
+    {id:'FAQ-0034',q:'How can I pay for public parking?',a:`<p>Payment methods for Mawaqif public parking:</p><ul><li><strong>Darb App</strong> — virtual parking via wallet</li><li><strong>TAMM App</strong></li><li><strong>SMS to 3009</strong> — send plate number and sector</li><li><strong>On-site payment machines</strong> (coins and card)</li><li><strong>Phone call</strong> to 3009 (IVR)</li></ul>`,kw:'pay parking how payment method sms darb'},
+    {id:'FAQ-0035',q:'What are the public parking charges?',a:`<table class="tbl"><thead><tr><th>Zone</th><th>Rate</th><th>Max</th></tr></thead><tbody>
+<tr><td>Standard Public Parking</td><td class="mono text-amber">AED 2/hr</td><td>—</td></tr>
+<tr><td>MSCP (Multi-Storey)</td><td class="mono text-amber">AED 2/hr</td><td>AED 15/day</td></tr>
+<tr><td>Premium Areas</td><td class="mono text-amber">AED 4/hr</td><td>—</td></tr>
+<tr><td>Abu Dhabi Mall (Public)</td><td>3 hrs FREE then AED 10/hr</td><td>—</td></tr>
+<tr><td>MBZ City ME10/ME11</td><td class="mono text-amber">AED 2/hr</td><td>— (from Apr 6 2026)</td></tr>
+</tbody></table>`,kw:'parking charges rates AED 2 per hour fees'},
+    {id:'FAQ-0218',q:'Can I use Darb Mobile App to view parking fees deducted from my wallet?',a:`<p>Yes. In the Darb App: go to <strong>Financial Transactions</strong> → select service type as <strong>"Virtual Parking by wallet"</strong> to view all parking fee deductions.</p>`,kw:'view parking fees deducted wallet darb app'},
+    {id:'FAQ-0321',q:'Do I need to create a new account to use the DARB app?',a:`<p>If you already have a Darb account (from the website or previous registration), you use the <strong>same account</strong> to log in to the app. No new account needed.</p>`,kw:'new account darb app same existing'},
+    {id:'FAQ-0323',q:'Are there any additional fees for using the DARB app?',a:`<p><strong>No additional fees.</strong> Parking charges are the same regardless of payment method (app, SMS, machine). The Darb App itself is free to download and use.</p>`,kw:'additional fees darb app no extra'},
+    {id:'FAQ-0322',q:'Can I top up my balance via the DARB app?',a:`<p>Yes. Open Darb App → go to <strong>Wallet</strong> → <strong>Top Up</strong> → enter amount and pay by credit/debit card. Top-ups reflect immediately.</p>`,kw:'top up balance darb app wallet'},
+  ],
+
+  // ---- MAWAQIF INSPECTION ----
+  maw_inspection: [
+    {id:'FAQ-0197',q:'How is parking enforced in Abu Dhabi?',a:`<p>Parking enforcement in Abu Dhabi uses a combination of:</p><ul><li><strong>On-foot parking inspectors</strong></li><li><strong>Smart vehicles</strong> with AI cameras that scan all plates automatically</li><li><strong>Fixed cameras</strong> in key zones</li></ul><p>Fines are issued digitally and sent via SMS to the registered vehicle owner.</p>`,kw:'enforcement inspection how parking'},
+    {id:'FAQ-0301',q:'What is the function of smart vehicles?',a:`<p>Smart vehicles (equipped with AI cameras) drive through parking zones and automatically scan vehicle plates. The system detects expired meters, unpaid parking, and permit violations in real time.</p>`,kw:'smart vehicle function camera AI'},
+    {id:'FAQ-0297',q:'What is the goal of using smart vehicles and AI in Mawaqif?',a:`<p>The goal is to <strong>improve enforcement efficiency and fairness</strong>. AI cameras can cover more zones faster and more consistently than manual inspection, reducing human error and ensuring equal enforcement across all zones.</p>`,kw:'smart vehicle AI goal purpose mawaqif'},
+    {id:'FAQ-0302',q:'Does the vehicle take photos?',a:`<p>Yes. Smart inspection vehicles take <strong>photos of the vehicle and its plate</strong> as evidence when a violation is detected. These photos are stored as proof of the violation.</p>`,kw:'photos evidence inspection vehicle camera'},
+    {id:'FAQ-0311',q:'Do cameras record video or only photos?',a:`<p>The smart vehicles capture <strong>photos</strong> at the time of violation detection. Some fixed cameras may record video. The evidence is reviewed by Mawaqif officers before fines are confirmed.</p>`,kw:'video photos cameras record inspection'},
+    {id:'FAQ-0313',q:'Who reviews the videos or photos?',a:`<p>Trained Mawaqif officers review all captured images before a fine is officially issued. No fine is issued based purely on AI detection without human review.</p>`,kw:'who reviews photos evidence officers'},
+    {id:'FAQ-0308',q:'Is it possible for the technology to make mistakes?',a:`<p>While the AI system is highly accurate, errors can occur (e.g., partially obscured plates). That is why all evidence is reviewed by human officers before issuing a fine. Customers who believe a fine was issued in error can file a grievance.</p>`,kw:'mistake technology AI error wrong fine'},
+    {id:'FAQ-0312',q:'What types of violations do the cameras detect?',a:`<ul><li>Expired parking meters</li><li>Parking without payment</li><li>Parking in restricted zones</li><li>Using disabled spaces without valid PoD permit</li><li>Double parking</li><li>Blocking access points</li></ul>`,kw:'violations detected cameras types'},
+    {id:'FAQ-0314',q:'Can I request the photo or video to support my objection?',a:`<p>Yes. When filing a grievance, you can request the evidence photo through the grievance process in the Darb App or TAMM. The evidence will be shared with you as part of the review.</p>`,kw:'request photo evidence objection grievance'},
+    {id:'FAQ-0303',q:'Can I object to a fine issued by a smart vehicle?',a:`<p>Yes. You have the right to appeal any fine, including those issued via smart vehicle AI. Use the <strong>Darb App</strong> or <strong>TAMM grievance system</strong> to file your objection and upload supporting evidence.</p>`,kw:'object appeal fine smart vehicle AI'},
+    {id:'FAQ-0198',q:'What should I do if I notice illegal parking?',a:`<p>Report illegal parking by calling <strong>8003009</strong> or via the Darb App → Report section. Provide the location, plate number, and nature of the violation.</p>`,kw:'report illegal parking notice'},
+    {id:'FAQ-0309',q:'Was the public informed about the smart vehicle system?',a:`<p>Yes. Q Mobility publicly announced the introduction of AI-powered parking inspection vehicles through official communications, social media, and press releases before deployment.</p>`,kw:'public informed announcement smart vehicle'},
+    {id:'FAQ-0307',q:'Will current inspectors be replaced?',a:`<p>No. Smart vehicles <strong>assist</strong> current inspectors — they do not replace them. Human officers still review all evidence before any fine is confirmed.</p>`,kw:'inspectors replaced smart vehicle no'},
+    {id:'FAQ-0304',q:'Do the vehicles cover all areas in Abu Dhabi?',a:`<p>Smart inspection vehicles cover all active Mawaqif paid parking zones. Coverage continues to expand as more zones are activated. Check the Darb App for the latest active zone map.</p>`,kw:'smart vehicle coverage all areas Abu Dhabi'},
+    {id:'FAQ-0199',q:'What happens during a parking inspection?',a:`<p>The smart vehicle drives through the zone and scans all plates. The system automatically cross-references each plate against:</p><ul><li>Active paid parking sessions (Darb app, SMS, machine)</li><li>Valid permits (residential, government, commercial)</li><li>PoD exemptions</li></ul><p>Any vehicle without valid coverage is flagged for review and potentially fined.</p>`,kw:'inspection what happens process smart vehicle scan'},
+  ],
+
+  // ---- MAWAQIF IMPOUND ----
+  maw_impound: [
+    {id:'FAQ-0007',q:'Where are the towing yards located?',a:`<table class="tbl"><thead><tr><th>Yard</th><th>Location</th><th>Hours</th></tr></thead><tbody>
+<tr><td>Al Karamah (Abu Dhabi)</td><td>Al Karamah area, Abu Dhabi</td><td>24/7</td></tr>
+<tr><td>Al Ain Car Pound</td><td>Industrial Area, Al Ain</td><td>8AM – 8PM</td></tr>
+<tr><td>Musaffah Car Pound</td><td>MN3, Mussafah</td><td>Business hours</td></tr>
+<tr><td>Al Mafraq</td><td>For vehicles from outside AUH / Bani Yas</td><td>Business hours</td></tr>
+</tbody></table>`,kw:'towing yard location Al Karamah Al Ain Mussafah'},
+    {id:'FAQ-0011',q:'What is the towing fee?',a:`<table class="tbl"><thead><tr><th>Fee Type</th><th>Amount</th></tr></thead><tbody>
+<tr><td>Towing Fee</td><td class="mono text-amber">AED 500</td></tr>
+<tr><td>Storage – First Month</td><td class="mono text-amber">AED 100/day</td></tr>
+<tr><td>Storage – After 1 Month</td><td class="mono text-amber">AED 500/month</td></tr>
+<tr><td>Payment Method</td><td>Credit card only (at the yard)</td></tr>
+</tbody></table><div class="danger-box">⚠ Vehicles unclaimed for <strong>6+ months</strong> are sold at public auction.</div>`,kw:'towing fee AED 500 storage per day'},
+    {id:'FAQ-0165',q:'What documents are required to release an impounded vehicle?',a:`<ul><li><strong>Original Emirates ID</strong> (owner or authorized person)</li><li><strong>Vehicle Registration Card (Mulkiya)</strong></li><li><strong>Power of Attorney</strong> (if you are NOT the registered owner)</li></ul>`,kw:'documents release impound vehicle required'},
+    {id:'FAQ-0167',q:'What payment methods are accepted at the impound yard?',a:`<p><strong>Credit card only.</strong> Cash is not accepted. Ensure you have a valid credit card before visiting the yard.</p>`,kw:'payment method impound yard credit card'},
+    {id:'FAQ-0164',q:'What are the terms for cars impounded for long periods?',a:`<p>If a vehicle remains at the impound yard for <strong>more than 6 months</strong> without being claimed, it is subject to <strong>public auction</strong> by the impound yard authority. The owner loses the right to claim the vehicle after this period.</p>`,kw:'impound long period 6 months auction'},
+    {id:'FAQ-0163',q:'Is there an additional fee if a vehicle is not released on the same day?',a:`<p>Yes. Storage fees accumulate daily: <strong>AED 100/day</strong> for the first month, then <strong>AED 500/month</strong> thereafter. Release the vehicle as quickly as possible to minimize fees.</p>`,kw:'same day fee storage daily AED 100'},
+    {id:'FAQ-0169',q:'What are the towing yard working hours?',a:`<p>Al Karamah (Abu Dhabi): <strong>24/7</strong><br>Al Ain Industrial Area: <strong>8AM – 8PM</strong><br>Mussafah: Business hours (contact yard for exact times)</p>`,kw:'towing yard hours working open'},
+    {id:'FAQ-0168',q:'How to appeal a towing fine?',a:`<p>If you believe a towing was issued in error, file a grievance online via <strong>Darb App</strong> or <strong>TAMM</strong>.</p><ul><li>If the grievance is accepted → vehicle released for free (or amount refunded if already paid)</li><li>Include all evidence and photos in your submission</li></ul>`,kw:'appeal tow towing fine grievance'},
+  ],
+
+  // ---- MAWAQIF MSCP ----
+  maw_mscp: [
+    {id:'FAQ-0182',q:'How does the Multi-Storey Car Park system work?',a:`<ol><li>At the entrance gate, cameras or ticket readers record your vehicle information or issue a ticket</li><li>Park on any available floor</li><li>Upon departure, time is calculated automatically</li><li>Pay the parking fee via the toll collection device</li><li>Exit gate opens after payment</li></ol>`,kw:'mscp multi storey how works'},
+    {id:'FAQ-0183',q:'Are there monthly subscriptions for MSCPs?',a:`<table class="tbl"><thead><tr><th>Period</th><th>Price</th></tr></thead><tbody>
+<tr><td>3 Months</td><td class="mono text-amber">AED 1,369</td></tr>
+<tr><td>6 Months</td><td class="mono text-amber">AED 2,738</td></tr>
+<tr><td>1 Year</td><td class="mono text-amber">AED 5,475</td></tr>
+</tbody></table>`,kw:'mscp subscription monthly 3 6 12 months fee'},
+    {id:'FAQ-0033',q:'Are there special parking spots in multi-storey car parks?',a:`<p>Yes. MSCP locations include designated spots for:</p><ul><li>People of Determination (PoD)</li><li>Electric Vehicles (EV charging spaces)</li><li>Family spaces (near lifts)</li></ul>`,kw:'mscp special spots POD EV electric'},
+  ],
+
+  // ---- MAWAQIF PRIVATE PARKING (Abu Dhabi Mall) ----
+  maw_private: [
+    {id:'FAQ-0272',q:'What are the free parking hours at Abu Dhabi Mall?',a:`<p>Free parking: <strong>3 hours</strong> (operating hours: 8AM – 2AM)</p><p>After 3 free hours: <strong>AED 10 per hour</strong></p>`,kw:'abu dhabi mall free parking hours'},
+    {id:'FAQ-0267',q:'What are the parking payment methods at Abu Dhabi Mall?',a:`<p>Parking at Abu Dhabi Mall can be paid via:</p><ul><li>Parking pay stations in the mall</li><li>Credit/debit card</li><li>Darb App</li></ul>`,kw:'abu dhabi mall payment methods parking'},
+    {id:'FAQ-0270',q:'What is the parking rate after the free hours?',a:`<p>After the 3 free hours: <strong>AED 10 per additional hour</strong>.</p>`,kw:'abu dhabi mall rate after free AED 10'},
+    {id:'FAQ-0268',q:'What happens if I park more than 13 hours at Abu Dhabi Mall?',a:`<p>Vehicles parked for more than 13 hours without authorization may be flagged for violation. Contact mall management at <strong>Admalls@qmobility.ae</strong> for tenant-specific rules.</p>`,kw:'abu dhabi mall 13 hours overstay penalty'},
+    {id:'FAQ-0273',q:'What happens if I do not pay for parking on time at Abu Dhabi Mall?',a:`<p>Unpaid parking at Abu Dhabi Mall results in a violation notice. Repeated violations may result in clamping or escalation through the mall management office.</p>`,kw:'abu dhabi mall unpaid parking violation'},
+    {id:'FAQ-0271',q:'Is there free parking for People of Determination at Abu Dhabi Mall?',a:`<p>Yes. Valid PoD permit holders receive <strong>free parking</strong> at Abu Dhabi Mall. Designated PoD spots are located near all entrances.</p>`,kw:'POD free parking abu dhabi mall people determination'},
+    {id:'FAQ-0274',q:'How can visitors pay for parking?',a:`<p>Mall visitors pay at parking pay stations inside the mall (near exits) or online before leaving. Credit/debit card is accepted. Darb App can also be used if the vehicle is registered.</p>`,kw:'visitors pay parking mall how'},
+    {id:'FAQ-0276',q:'Are there EV charging spaces at Abu Dhabi Mall?',a:`<p>Yes. Dedicated EV charging spaces are available. Parking in EV spots without charging may result in a violation.</p>`,kw:'EV electric vehicle charging abu dhabi mall'},
+    {id:'FAQ-0275',q:'Are there specific rules for vehicles at Abu Dhabi Mall?',a:`<ul><li>Standard vehicles follow the 3-hour free parking rule</li><li>No overnight parking without prior authorization</li><li>EV spots are for charging vehicles only</li><li>PoD spots require a valid permit</li><li>Delivery vehicles have designated hours and bays</li></ul>`,kw:'rules vehicles abu dhabi mall regulations'},
+    {id:'FAQ-0281',q:'Is there any insurance for parking in a mall?',a:`<p>Parking at Abu Dhabi Mall is at the driver's own risk. The mall is not responsible for theft or damage to vehicles. Ensure your vehicle insurance is adequate.</p>`,kw:'insurance parking mall risk'},
+    {id:'FAQ-0282',q:'How can I contact customer support for Abu Dhabi Mall parking?',a:`<p>Contact via: <strong>Admalls@qmobility.ae</strong></p>`,kw:'contact abu dhabi mall parking support'},
+    {id:'FAQ-0284',q:'What are the delivery vehicle parking hours at Abu Dhabi Mall?',a:`<p>Delivery vehicles must use designated loading/unloading bays. Delivery hours and locations are managed by mall management. Contact <strong>Admalls@qmobility.ae</strong> for specific bays and schedules.</p>`,kw:'delivery vehicle hours abu dhabi mall loading'},
+    {id:'FAQ-0283',q:'What about weekends and public holidays at Abu Dhabi Mall?',a:`<p>The same free parking (3 hours) and rate (AED 10/hr after) applies on weekends and public holidays. The mall operates its usual hours.</p>`,kw:'weekend holiday abu dhabi mall parking'},
+    {id:'FAQ-0279',q:'Can I park in designated spaces for People of Determination?',a:`<p><strong>No</strong> — PoD designated spaces are exclusively for vehicles displaying a valid PoD permit. Parking without a valid permit in a PoD spot will result in an immediate fine and possible towing.</p>`,kw:'POD space cannot park without permit'},
+    {id:'FAQ-0280',q:'What happens if I park in an unauthorized area or block charging stations?',a:`<p>Parking in unauthorized areas (including blocking EV charging stations or PoD spots without valid permit) will result in a fine and possible towing at the owner's expense.</p>`,kw:'unauthorized parking block charging station fine'},
+  ],
+
+  // ---- DARB GENERAL ----
+  darb_general: [
+    {id:'FAQ-0084',q:'What is Darb toll gate?',a:`<p>Darb is Abu Dhabi's electronic toll system, managed by Q Mobility. Toll gates are positioned at key entry/exit points around Abu Dhabi to manage traffic flow and fund road infrastructure. The system is linked to the <strong>Darb App</strong> and deducts tolls automatically from registered wallets.</p>`,kw:'darb toll gate what is'},
+    {id:'FAQ-0085',q:'How does the Darb toll gate system work?',a:`<p>When your vehicle passes through a Darb toll gate:</p><ol><li>Cameras read your number plate automatically</li><li>The system looks up your registered Darb account</li><li>The toll fee is deducted from your linked wallet</li><li>You receive an SMS confirmation</li></ol><p>If your balance is insufficient, a violation may be recorded.</p>`,kw:'darb toll how works automatic camera plate'},
+    {id:'FAQ-0086',q:'Where are Darb toll gates located?',a:`<p>Darb toll gates are currently located at key entry/exit points including <strong>Al Maqtaa Bridge</strong>, <strong>Al Saadiyat Island</strong>, <strong>Sheikh Zayed Bridge</strong>, and other strategic points. Check the Darb App for the full current map.</p>`,kw:'darb toll gates location where'},
+    {id:'FAQ-0088',q:'Who is responsible for managing the toll gates?',a:`<p><strong>Q Mobility</strong> is responsible for managing all Darb toll gates in Abu Dhabi. Q Mobility is a subsidiary of ADQ.</p>`,kw:'responsible managing toll gates qmobility'},
+    {id:'FAQ-0001',q:'How can I contact Q Mobility customer service?',a:`<p>Phone/WhatsApp: <strong>8003009</strong> (free, 24/7)<br>Email: <strong>customers@qmobility.ae</strong><br>Darb App: Support section</p>`,kw:'contact customer service phone email darb'},
+    {id:'FAQ-0228',q:'How can I contact Darb or Q Mobility support?',a:`<p>Call <strong>8003009</strong> (free, available 24/7) or email <strong>customers@qmobility.ae</strong>. You can also submit a request directly in the Darb App under <strong>Support / Complaints</strong>.</p>`,kw:'darb support contact call email'},
+    {id:'FAQ-0099',q:'What are the peak times during Ramadan for Darb tolls?',a:`<p>During Ramadan, toll fee peak times are adjusted. Typically, a reduced peak window applies during the holy month. The exact Ramadan toll schedule is announced officially before Ramadan each year. Check the Darb App or call 8003009 for current Ramadan schedule.</p>`,kw:'ramadan toll peak times hours'},
+  ],
+
+  // ---- DARB REGISTRATION ----
+  darb_reg: [
+    {id:'FAQ-0222',q:'What do I need to register a Darb account?',a:`<ul><li>Traffic file number (10 digits — from the vehicle registration card, <strong>NOT</strong> the driving license)</li><li>Emirates ID</li><li>Active email address</li><li>Mobile number linked to your traffic file</li></ul>`,kw:'register darb account required documents TC number'},
+    {id:'FAQ-0096',q:'How much does it cost to register a vehicle in Darb?',a:`<p>Vehicle registration fee: <strong>AED 50 per vehicle</strong>. A minimum wallet balance of <strong>AED 100</strong> is required to register a vehicle (AED 50 is credited back to your wallet after registration).</p>`,kw:'register vehicle cost fee AED 50 darb'},
+    {id:'FAQ-0076',q:'Can I register more than one vehicle?',a:`<p>Yes. You can register multiple vehicles under the same individual account. Each vehicle requires its own AED 50 registration fee and must have a minimum AED 100 wallet balance at the time of registration.</p>`,kw:'multiple vehicles register darb one account'},
+    {id:'FAQ-0094',q:'What are the available channels for creating a Darb account?',a:`<ul><li><strong>Darb App</strong> (individual accounts only — use UAE Pass to login)</li><li><strong>Website</strong>: darb.qmobility.ae (individual and establishment accounts)</li></ul><p>Establishment accounts must be created on the website only — not the app.</p>`,kw:'create darb account channels app website'},
+    {id:'FAQ-0093',q:'Is registration compulsory if I do not cross toll gates?',a:`<p>Registration is required for all vehicles that may use Abu Dhabi roads that are subject to tolls. However, if a vehicle never crosses a toll gate during peak hours, no fee is automatically deducted — but registration is still recommended to avoid violations.</p>`,kw:'registration compulsory required toll gates'},
+    {id:'FAQ-0075',q:'Can I register a vehicle I do not own using my individual account?',a:`<p>Only the registered owner of a vehicle can register it under their individual account. For establishment accounts, vehicles owned by or under the company can be registered under the company Darb account.</p>`,kw:'register vehicle not own account individual'},
+    {id:'FAQ-0073',q:'How can I register a new vehicle if I have a previous account?',a:`<p>Log in to your existing Darb account → go to <strong>My Vehicles</strong> → <strong>Add Vehicle</strong> → enter the new vehicle TC number and details → complete registration and pay AED 50.</p>`,kw:'new vehicle add existing account darb'},
+    {id:'FAQ-0122',q:'Should I register more than one account if I have multiple TC numbers?',a:`<p>No. You should register <strong>one account</strong> and add all vehicles under it. If you have multiple TC numbers (e.g., after merging), use the <strong>merged TC number</strong>. Contact 8003009 for assistance with merged TC numbers.</p>`,kw:'multiple accounts TC numbers one account'},
+    {id:'FAQ-0078',q:'What is the procedure when changing the vehicle license plate number?',a:`<p>If you changed your plate number but kept the same vehicle:</p><ol><li>Submit a complaint in the Darb App: Login → Requests → Complaints → (+)</li><li>Or via website: submit a vehicle registration complaint with old and new Mulkiya</li><li>No additional fee applies for plate number changes</li></ol>`,kw:'changed plate number same vehicle procedure darb'},
+    {id:'FAQ-0204',q:'What should I do when I sell my vehicle?',a:`<p>After selling your vehicle, remove it from your Darb account:</p><ol><li>Log in → My Vehicles → select the vehicle → Deregister</li><li>Any remaining wallet balance can be withdrawn to your bank account</li></ol><p>Failure to deregister may result in toll charges for the new owner's usage.</p>`,kw:'sell vehicle remove deregister darb account'},
+    {id:'FAQ-0083',q:'How can I close my Darb account?',a:`<p>Contact <strong>8003009</strong> or email <strong>customers@qmobility.ae</strong> to request account closure. Any remaining balance must be withdrawn first. Outstanding violations must be settled before closure.</p>`,kw:'close darb account how'},
+    {id:'FAQ-0079',q:'How can I reset my password?',a:`<p>For individual accounts using UAE Pass: password reset is handled through the <strong>UAE Pass</strong> application.<br>For establishment accounts: use the <strong>Forgot Password</strong> link on darb.qmobility.ae.</p>`,kw:'reset password darb account forgot'},
+    {id:'FAQ-0080',q:'Can I check that my personal information is updated in the system?',a:`<p>Yes. Log in to your Darb account → go to <strong>My Profile</strong> to view and update your personal information including phone number, email, and linked vehicles.</p>`,kw:'check personal information updated profile darb'},
+    {id:'FAQ-0081',q:'How can I add my new phone number to the system?',a:`<p>Log in to Darb → go to <strong>My Profile</strong> → <strong>Edit Contact</strong> → update phone number → verify with OTP sent to the new number.</p>`,kw:'add new phone number darb account update'},
+    {id:'FAQ-0092',q:'Does the system provide secondary authentication when logging in?',a:`<p>Yes. Darb uses <strong>UAE Pass</strong> for individual account authentication, which includes secure login with government-grade verification. Establishment accounts have a separate OTP-based 2FA mechanism.</p>`,kw:'two factor authentication login UAE Pass darb'},
+    {id:'FAQ-0071',q:'What should I do if my phone number is not in the contact list during registration?',a:`<p>If your phone number is not linked to your traffic file, call <strong>8003009</strong>. Provide your TC number, Emirates ID, and company details (if establishment). The agent will link your number and send an OTP to complete registration.</p>`,kw:'phone number not in list registration error no mobile'},
+    {id:'FAQ-0229',q:'How do I update an old Darb account that uses a temporary email (e.g., @itc.toll)?',a:`<p>Old accounts using @itc.toll or similar legacy emails must be updated. Contact <strong>8003009</strong> or email <strong>customers@qmobility.ae</strong> with your TC number and Emirates ID to request an email update on your account.</p>`,kw:'old account itc toll email update legacy'},
+  ],
+
+  // ---- DARB TOLL/WALLET ----
+  darb_toll: [
+    {id:'FAQ-0087',q:'How is the toll fee collected?',a:`<p>Toll fees are automatically deducted from your registered <strong>Darb wallet</strong> when your vehicle passes through a toll gate. You receive an SMS notification after each deduction.</p>`,kw:'toll fee collected how wallet automatic deduct'},
+    {id:'FAQ-0100',q:'How can I top up my wallet?',a:`<p>Top up methods:</p><ul><li><strong>Darb App</strong> — credit/debit card</li><li><strong>Darb website</strong> — darb.qmobility.ae</li><li><strong>TAMM App/website</strong></li><li><strong>Exchange & payment centers</strong></li></ul>`,kw:'top up wallet how darb app tamm'},
+    {id:'FAQ-0224',q:'What are Darb toll charges and wallet rules?',a:`<table class="tbl"><thead><tr><th>Item</th><th>Details</th></tr></thead><tbody>
+<tr><td>Toll per crossing (peak)</td><td class="mono text-amber">AED 4</td></tr>
+<tr><td>Toll per crossing (off-peak)</td><td class="mono text-amber">AED 2</td></tr>
+<tr><td>Max per day</td><td class="mono text-amber">AED 16</td></tr>
+<tr><td>Minimum wallet balance</td><td class="mono text-amber">AED 100 (to register vehicle)</td></tr>
+<tr><td>Minimum to top up</td><td class="mono text-amber">AED 50</td></tr>
+</tbody></table>`,kw:'toll charge AED 4 2 peak off peak daily max'},
+    {id:'FAQ-0097',q:'Why were my transactions not paid while I have topped up my wallet?',a:`<p>This usually means <strong>Auto Payment</strong> is not enabled for the vehicle. Check in Darb App → My Vehicles → [select vehicle] → enable <strong>Auto Payment</strong>. If enabled and issue persists, raise a support case or call 8003009.</p>`,kw:'transactions not paid wallet topped up auto payment'},
+    {id:'FAQ-0098',q:'Can I enable or pause auto payment for a group of vehicles in a single step?',a:`<p>Yes. In the Darb App or website, go to <strong>My Vehicles</strong> and use the bulk toggle to enable/disable auto payment for multiple vehicles at once.</p>`,kw:'auto payment enable disable bulk vehicles group'},
+    {id:'FAQ-0102',q:'How can I add a new wallet?',a:`<p>Log in to Darb → go to <strong>Wallets</strong> → <strong>Add Wallet</strong> → enter wallet details and confirm. You can link multiple wallets and assign different wallets to different vehicles.</p>`,kw:'add new wallet darb account multiple'},
+    {id:'FAQ-0103',q:'Does the system require prepaid cards?',a:`<p>No. The Darb system works with bank debit/credit cards for top-ups. No separate prepaid card is required. Your wallet balance is held digitally in your Darb account.</p>`,kw:'prepaid card required darb no'},
+    {id:'FAQ-0104',q:'How can I refund a failed payment during top-up?',a:`<p>If a top-up payment fails but your account was charged:</p><ul><li>The amount is automatically refunded to your bank account within <strong>1–3 working days</strong></li><li>If not refunded after 3 working days, contact <strong>8003009</strong> or email <strong>customers@qmobility.ae</strong></li></ul>`,kw:'refund failed payment top up wallet darb'},
+    {id:'FAQ-0105',q:'I want to withdraw the available balance in my account. What should I do?',a:`<p>To withdraw your Darb wallet balance:</p><ol><li>Log in to Darb → <strong>Wallet</strong> → <strong>Withdraw</strong></li><li>Enter bank account details and amount</li><li>Withdrawals process within 5–7 working days</li></ol><p>Ensure all outstanding violations are settled before withdrawal.</p>`,kw:'withdraw balance darb wallet account money'},
+    {id:'FAQ-0107',q:'Can I change the wallet assigned to a vehicle?',a:`<p>Yes. Log in to Darb → My Vehicles → select the vehicle → <strong>Change Wallet</strong> → select from your available wallets.</p>`,kw:'change wallet assigned vehicle darb'},
+    {id:'FAQ-0144',q:'Can I transfer the balance of my wallet to another customer?',a:`<p><strong>No.</strong> Wallet balances cannot be transferred between accounts. Your balance is personal to your Darb account only.</p>`,kw:'transfer balance wallet another customer no'},
+    {id:'FAQ-0145',q:'Can I assign a different wallet to a vehicle?',a:`<p>Yes. Each vehicle in your Darb account can have its own assigned wallet. Go to My Vehicles → select vehicle → Assign Wallet.</p>`,kw:'assign wallet vehicle different darb'},
+    {id:'FAQ-0207',q:'What should I do if I pass through a toll gate without sufficient balance?',a:`<p>If your balance was insufficient:</p><ul><li>A <strong>violation may be recorded</strong></li><li>Top up your wallet immediately</li><li>Pay any recorded violation within the grace period (5 working days for non-AD vehicles)</li><li>Contact 8003009 if you believe a violation was recorded in error</li></ul>`,kw:'pass toll insufficient balance violation what to do'},
+    {id:'FAQ-0117',q:'Where can I pay my toll gate fines?',a:`<p>Toll gate fines can be paid via:</p><ul><li><strong>Darb App</strong></li><li><strong>Darb website</strong> (darb.qmobility.ae)</li><li><strong>TAMM platform</strong></li><li><strong>Service centers</strong></li></ul>`,kw:'pay toll fines where channels darb tamm'},
+  ],
+
+  // ---- DARB EXEMPTIONS ----
+  darb_exempt: [
+    {id:'FAQ-0226',q:'How can I apply for a Darb toll exemption?',a:`<p>Log in to your Darb account → go to <strong>Requests</strong> → <strong>Add New Request</strong> → select the exemption type → upload required documents → submit.</p><p>Available exemption types:</p><ul><li>People of Determination (PoD)</li><li>Senior Citizen (UAE Nationals aged 60+)</li><li>Specific government-defined categories</li></ul>`,kw:'darb toll exemption apply how'},
+    {id:'FAQ-0108',q:'What vehicles are exempted or excluded from toll fees?',a:`<ul><li>Emergency vehicles (ambulances, police, fire)</li><li>Vehicles with valid PoD exemptions</li><li>Senior citizen exemptions (UAE Nationals 60+)</li><li>Motorcycles (not subject to tolls)</li><li>Government-specific exemptions (as declared)</li></ul>`,kw:'exempt excluded toll vehicles motorcycles police'},
+    {id:'FAQ-0109',q:'Can I receive more than one exemption?',a:`<p><strong>No.</strong> Only one toll exemption is permitted per vehicle at any given time. If you apply for a new exemption type, it replaces the previous one.</p>`,kw:'more than one exemption toll darb one limit'},
+    {id:'FAQ-0152',q:'Can I request a toll exemption for a relative?',a:`<p>Yes, but only for <strong>first or second-degree relatives</strong> (spouse, parents, children, siblings). You must provide proof of kinship (family book or official document) along with the exemption application.</p>`,kw:'exemption relative family kinship toll darb'},
+    {id:'FAQ-0112',q:'If I have an exempted vehicle and I sell it or change its plate number, do I need to re-apply?',a:`<p>Yes. If the vehicle is sold or the plate changed, the exemption must be <strong>re-applied</strong> for the new vehicle or new plate. Exemptions are tied to specific vehicle registrations.</p>`,kw:'exemption re-apply sold change plate vehicle'},
+    {id:'FAQ-0113',q:'How will I be informed that my exemption or grievance request has been approved?',a:`<p>You will receive an <strong>SMS notification</strong> to your registered mobile number once a decision is made. You can also check status in the Darb App under <strong>Requests</strong>.</p>`,kw:'informed approved exemption grievance notification SMS'},
+    {id:'FAQ-0110',q:'How can I apply for exemption or grievance request?',a:`<p>Log in to Darb → <strong>Requests</strong> → <strong>Add New Request</strong> → select type (Exemption or Grievance) → fill details → upload documents → submit.</p>`,kw:'apply exemption grievance request how darb'},
+    {id:'FAQ-0111',q:'When should I apply for a grievance request?',a:`<p>Apply for a Darb grievance when:</p><ul><li>You believe a toll was charged incorrectly</li><li>Your vehicle passed a gate but the wrong amount was deducted</li><li>A violation was recorded while your account had sufficient balance</li></ul><p>Apply <strong>within 60 days</strong> of the transaction in question.</p>`,kw:'when apply grievance darb toll when'},
+    {id:'FAQ-0146',q:'Which vehicles are exempted from toll fees?',a:`<p>Toll-exempt vehicles include: ambulances, police vehicles, civil defense vehicles, PoD-exempted vehicles, senior citizen-exempted vehicles, and specific government-designated categories. Motorcycles cross toll gates but are not charged.</p>`,kw:'which vehicles exempt toll types categories'},
+    {id:'FAQ-0147',q:'Can I receive more than one toll exemption?',a:`<p><strong>No.</strong> Each vehicle can have only one active toll exemption at a time.</p>`,kw:'more than one toll exemption same vehicle no'},
+    {id:'FAQ-0114',q:'Can I request an exemption for a relative to benefit from the exemption?',a:`<p>Yes. You may apply for a toll exemption on behalf of a first- or second-degree relative. Upload the relevant kinship document (family certificate, marriage certificate, etc.) with your application.</p>`,kw:'exemption relative benefit family kinship document'},
+  ],
+
+  // ---- DARB DISPUTES ----
+  darb_disputes: [
+    {id:'FAQ-0206',q:'How will I be informed if I receive a toll gate violation?',a:`<p>Toll gate violations are sent via <strong>SMS</strong> to your registered mobile number. You can also check violations in the Darb App → <strong>Violations</strong> section.</p>`,kw:'toll violation informed SMS notification darb'},
+    {id:'FAQ-0227',q:'What are the main Darb violations and fines?',a:`<table class="tbl"><thead><tr><th>Violation</th><th>Fine</th><th>Grace</th></tr></thead><tbody>
+<tr><td>Non-registration (per day, non-AD vehicle)</td><td class="mono text-amber">AED 50/day</td><td>5 working days</td></tr>
+<tr><td>Plate tampering</td><td class="mono text-red">AED 10,000</td><td>—</td></tr>
+<tr><td>Toll gate damage</td><td class="mono text-red">AED 10,000</td><td>—</td></tr>
+<tr><td>Maximum per violation</td><td class="mono text-amber">AED 10,000</td><td>—</td></tr>
+<tr><td>Maximum annual cap</td><td class="mono text-amber">AED 25,000</td><td>—</td></tr>
+</tbody></table>`,kw:'darb violations fines AED 50 plate tampering'},
+  ],
+
+  // ---- DARB GHANTOUT ----
+  darb_ghantout: [
+    {id:'GHANTOUT-001',q:'What is the Ghantout Gate?',a:`<p>The Ghantout Toll Gate is a new toll gate installed on <strong>Sheikh Maktoum bin Rashid Road</strong>. It has been physically installed but is <strong>currently NOT active</strong>. No toll fees are currently being charged at this gate.</p>`,kw:'ghantout gate what is new toll'},
+    {id:'GHANTOUT-002',q:'Is the Ghantout Gate currently operational?',a:`<div class="danger-box">⚠ The Ghantout Gate is <strong>installed but NOT active</strong>. Fees will be announced officially before implementation.</div><p>Tell customers: <em>"The gate is currently not active. Fees will be announced officially when implemented."</em></p>`,kw:'ghantout active operational fees not yet'},
+    {id:'GHANTOUT-003',q:'When will the Ghantout Gate be activated?',a:`<p>No official activation date has been announced. Customers will be informed through official Q Mobility communications, SMS, and the Darb App when the gate is activated.</p>`,kw:'ghantout activation date when announced'},
+  ],
+
+  // ---- FREEFLOW ----
+  ff_general: [
+    {id:'FF-001',q:'What is Freeflow / Barrierless parking?',a:`<p>Freeflow (barrierless) parking is a modern parking system where there are <strong>no physical barriers, tickets, or payment machines</strong> at the parking location.</p><p>How it works:</p><ol><li>Drive in — cameras read your plate automatically</li><li>Park and use the space normally</li><li>Drive out — cameras confirm exit time</li><li>Fee is auto-deducted from your DARB wallet after exit</li></ol><div class="warn-box">⚠ Ensure your DARB wallet has sufficient balance before parking in a Freeflow zone.</div>`,kw:'freeflow barrierless parking how works'},
+    {id:'FF-002',q:'What are the Freeflow parking rates?',a:`<table class="tbl"><thead><tr><th>Location</th><th>Rate</th><th>Max</th></tr></thead><tbody>
+<tr><td>W5 (near Landmark Tower)</td><td class="mono text-amber">AED 2/hr</td><td>Standard on-street max</td></tr>
+<tr><td>MSCP01 (Multi-Storey 1)</td><td class="mono text-amber">AED 2/hr</td><td>AED 15/day</td></tr>
+<tr><td>Abu Dhabi Mall</td><td>3 hrs FREE then AED 10/hr</td><td>—</td></tr>
+</tbody></table>`,kw:'freeflow rate AED 2 hour W5 MSCP01'},
+    {id:'FF-003',q:'What happens if I do not have enough balance in my Darb wallet?',a:`<p>If your Darb wallet has insufficient balance when you exit a Freeflow zone:</p><ul><li>A violation or negative balance record may be created</li><li>Top up your wallet immediately after parking</li><li>Repeated insufficient balance events may result in restrictions</li></ul>`,kw:'freeflow insufficient balance wallet darb exit'},
+    {id:'FF-004',q:'How do I know if I have been charged correctly for Freeflow parking?',a:`<p>Check the <strong>Darb App</strong> → Financial Transactions → filter by "Freeflow" or "Virtual Parking" to see your parking charges. Each session shows entry time, exit time, location, and amount charged.</p>`,kw:'freeflow charged correctly check darb app'},
+    {id:'FF-005',q:'What if I have a problem with a Freeflow parking charge?',a:`<p>Contact <strong>8003009</strong> or submit a complaint in the Darb App → Support → Complaint. Include your plate number, date, entry/exit times, and the location of the Freeflow parking.</p>`,kw:'freeflow problem charge complaint darb'},
+    {id:'FF-006',q:'Are there any restrictions on how long I can park in a Freeflow zone?',a:`<p>Standard parking time limits apply in Freeflow zones, the same as regular Mawaqif zones. Overstaying the time limit may result in a fine. The time limit varies by zone — check signage at the location.</p>`,kw:'freeflow time limit how long restriction'},
+  ],
+
+  // ---- SCRIPTS — MAWAQIF FINES ----
+  scripts_maw_fines: [
+    {title:'Customer received a fine and queries it',cat:'fines',ex:[
+      {r:'C',t:'I got a parking fine but I was not parked there.'},
+      {r:'A',t:'I understand, I\'m sorry to hear that. Could I please have your fine number or vehicle plate so I can look it up?'},
+      {r:'A',t:'[After checking] The fine was issued at [location] at [time] on [date]. I can see the evidence has been recorded. If you believe this is incorrect, I recommend filing a grievance through the Darb App or TAMM platform.'},
+      {r:'C',t:'How do I file a grievance?'},
+      {r:'A',t:'Log in to the Darb App → Fines → tap the fine → then tap "File Grievance". Upload any evidence you have, such as a parking receipt or photo. You\'ll receive a decision via SMS within 7 working days. A 25% discount applies if you pay within 60 days of the fine date.'},
+    ]},
+    {title:'Fine for previous vehicle owner',cat:'fines',ex:[
+      {r:'C',t:'I received a fine for a car I sold. What do I do?'},
+      {r:'A',t:'Please obtain a Vehicle Data Certificate from Muroor (the traffic department). With that certificate, visit a QMobility service center. Our team will transfer the fine to the previous owner\'s record once ownership is confirmed.'},
+    ]},
+    {title:'25% discount query',cat:'fines',ex:[
+      {r:'C',t:'Can I get a discount on my fine?'},
+      {r:'A',t:'Yes. A 25% discount applies if the fine is paid within 60 days from the date it was issued. After 60 days, the full amount applies. Would you like to pay now or file a grievance?'},
+    ]},
+    {title:'Fine paid but still showing',cat:'fines',ex:[
+      {r:'C',t:'I already paid my fine but it\'s still showing as unpaid.'},
+      {r:'A',t:'I understand. Payment usually reflects within 1–2 working days. Can you share your fine number and payment reference? I\'ll check the system for you.'},
+      {r:'A',t:'[After checking] I can see the payment was processed. Please allow up to 2 working days for the status to update. If it doesn\'t clear, please call 8003009 again with your payment reference and we\'ll escalate this.'},
+    ]},
+  ],
+  scripts_maw_permits: [
+    {title:'Residential permit – application guidance',cat:'permits',ex:[
+      {r:'C',t:'I want a residential permit in Mussafah, sector M8.'},
+      {r:'A',t:'I\'m sorry, residential permits in Mussafah are currently active only in sectors M10 and M11. Sector M8 is not covered at this time.'},
+      {r:'C',t:'What about M10?'},
+      {r:'A',t:'For M10, you can apply through the TAMM App or Darb platform. You\'ll need your tenancy contract (Tawtheeq), 3-month electricity bill, vehicle registration card (Mulkiya), and Emirates ID.'},
+      {r:'C',t:'What\'s the fee?'},
+      {r:'A',t:'For expats, the 1st vehicle is AED 800/year (AED 400 for 6 months). The 2nd to 4th vehicles are AED 1,200/year. UAE Nationals receive the permit free of charge.'},
+    ]},
+    {title:'Commercial permit application',cat:'permits',ex:[
+      {r:'C',t:'We need to reserve parking spaces for our construction project.'},
+      {r:'A',t:'For a commercial parking reservation, the application fee is AED 200. Government entities pay AED 55/day, AED 10,000 per space per 6 months, or AED 20,000/year. Private companies pay AED 85/day, AED 15,000/6 months, or AED 30,000/year.'},
+      {r:'C',t:'What documents do we need?'},
+      {r:'A',t:'You\'ll need a trade license, NOC, and depending on the type: a ground plan and municipality approval. Apply through the TAMM platform. Processing takes 3 working days once all docs are submitted.'},
+    ],note:'For loading/unloading permits: Letter explaining request + Trade License + Site Plan are all MANDATORY before raising the request.'},
+    {title:'Government permit application',cat:'permits',ex:[
+      {r:'C',t:'I work for a government entity and need permits for our employees.'},
+      {r:'A',t:'Government permits are applied for via email to gov.pr@qmobility.ae. Please include: an official letter, employee list, employee ID, Emirates ID, vehicle registration (Mulkiya), and kinship proof if required.'},
+      {r:'C',t:'When are the permits active?'},
+      {r:'A',t:'Government permits are active from 8:00 AM to 4:00 PM only, in the entity\'s workplace sector. They do not cover residential areas. The fee is AED 1,200 per vehicle per year.'},
+    ]},
+    {title:'PoD permit inquiry',cat:'permits',ex:[
+      {r:'C',t:'How do I apply for a People of Determination parking permit?'},
+      {r:'A',t:'You can apply through the TAMM platform or TAMM app. Alternatively, you can contact the Zayed Higher Organization directly at 800555 — they handle PoD permit issuance and modifications.'},
+      {r:'C',t:'What does it allow?'},
+      {r:'A',t:'A valid PoD permit allows parking in any legal spot — including residential, villa, standard, and premium parking — without paying any fees, as long as the permit is valid.'},
+    ]},
+    {title:'MBZ City – paid parking activated',cat:'permits',ex:[
+      {r:'C',t:'I got a fine in Mohammed Bin Zayed City. Is parking paid there now?'},
+      {r:'A',t:'Yes. Paid parking was activated in ME10 and ME11 commercial sectors, as well as villa zone commercial areas (Z17-01, Z19, Z20, Z27), starting April 6, 2026. The fee is AED 2 per hour.'},
+      {r:'C',t:'Can I park in the villa areas?'},
+      {r:'A',t:'No. Parking in villa residential areas is for permit holders only. The commercial areas along the main street are the paid public parking zones.'},
+    ]},
+  ],
+  scripts_maw_impound: [
+    {title:'Vehicle impounded – not Mawaqif (Bani Yas/Mussafah)',cat:'impound',ex:[
+      {r:'C',t:'My vehicle was impounded, can you check?'},
+      {r:'A',t:'Of course. May I have the fine or plate number?'},
+      {r:'A',t:'The fine was issued by the Marsad Team and the last known location was in Bani Yas. This is not a Mawaqif impoundment. Please contact the impound yard at 02-5134278 or Emirates Auctions at 800-0666666.'},
+    ]},
+    {title:'Vehicle impounded – Mawaqif release procedure',cat:'impound',ex:[
+      {r:'C',t:'My car was towed by Mawaqif. How do I get it back?'},
+      {r:'A',t:'Please visit the relevant impound yard with: your original Emirates ID, vehicle registration card (Mulkiya), and a Power of Attorney if you\'re not the owner.'},
+      {r:'C',t:'Where is the yard?'},
+      {r:'A',t:'Abu Dhabi is Al Karamah (24/7). Al Ain is the Industrial Area (8AM-8PM). Mussafah is MN3. If your vehicle was from outside Abu Dhabi or Bani Yas, it goes to Al Mafraq.'},
+      {r:'C',t:'What are the fees?'},
+      {r:'A',t:'AED 500 towing fee, plus AED 100 per day for the first month. After that, AED 500 per month. Vehicles impounded for more than 6 months are sold at public auction. Payment is by credit card only at the yard.'},
+    ]},
+  ],
+  scripts_darb_reg: [
+    {title:'Vehicle not showing – wrong TC number',cat:'registration',ex:[
+      {r:'C',t:'I added my TC number in the Darb app but my vehicle is still not showing.'},
+      {r:'A',t:'Which TC number did you use — the one on the car registration card or the driving license?'},
+      {r:'C',t:'The driving license.'},
+      {r:'A',t:'That\'s the issue. You must use the TC number from the vehicle registration card (Mulkiya), not the driving license. Please update it and try again.'},
+    ]},
+    {title:'Create individual Darb account',cat:'registration',ex:[
+      {r:'C',t:'How do I create a new Darb account for myself?'},
+      {r:'A',t:'You can create it through the Darb app or the website at darb.qmobility.ae. Log in using UAE Pass. You\'ll need your traffic file number from the registration card, Emirates ID, email, and mobile number.'},
+    ]},
+    {title:'Create establishment Darb account',cat:'registration',ex:[
+      {r:'C',t:'I want to create a Darb account for my company.'},
+      {r:'A',t:'For an establishment account, please use the Darb website only — not the app. Go to darb.qmobility.ae, click "Create New Account (Establishment)", and use an email address that has never been used for any Darb account before.'},
+    ]},
+    {title:'"No mobile number retrieved" error',cat:'registration',ex:[
+      {r:'C',t:'I\'m getting "No mobile phone number retrieved, please call 8003009" when registering.'},
+      {r:'A',t:'May I have your TC number, full company name, and trade license number?'},
+      {r:'A',t:'Thank you. What mobile number would you like to link? Please have it available — we\'ll send an OTP to verify.'},
+      {r:'A',t:'[After customer confirms OTP] — Please try registering again now. It should work.'},
+    ]},
+    {title:'Changed plate – same vehicle',cat:'registration',ex:[
+      {r:'C',t:'I changed my plate number but kept the same car. Do I need to re-register in Darb?'},
+      {r:'A',t:'Yes. Please submit a complaint in the Darb app: Login → Requests → Complaints → tap the (+) sign. Or use the Darb website and submit a vehicle registration complaint, attaching both the old and new registration cards. There is no additional fee for this.'},
+    ]},
+    {title:'Changed vehicle – same plate',cat:'registration',ex:[
+      {r:'C',t:'I changed my car but kept the same plate number.'},
+      {r:'A',t:'In this case, you need to re-register the new vehicle in the Darb system and pay the registration fee of AED 50 per vehicle. The wallet must have at least AED 100 balance to proceed.'},
+    ]},
+  ],
+  scripts_darb_wallet: [
+    {title:'Wallet top-up not reflecting',cat:'wallet',ex:[
+      {r:'C',t:'I topped up my wallet but the balance isn\'t showing.'},
+      {r:'A',t:'Any deducted amount will be automatically refunded to your wallet within 1 to 3 working days if the top-up failed. If it was topped up via TAMM, please raise a refund request through the TAMM platform.'},
+      {r:'C',t:'What if it still doesn\'t appear after 3 days?'},
+      {r:'A',t:'Please contact us at 8003009 or email customers@qmobility.ae and we\'ll investigate the transaction.'},
+    ]},
+    {title:'Parking fee deducted but no ticket issued',cat:'wallet',ex:[
+      {r:'C',t:'I paid for parking via Darb app but no ticket was issued and my money was deducted.'},
+      {r:'A',t:'The deducted amount will be automatically refunded to your Darb wallet within 1 to 3 working days through the reconciliation process. No action is needed from your side.'},
+    ]},
+    {title:'Toll not being deducted despite sufficient balance',cat:'wallet',ex:[
+      {r:'C',t:'I have balance in my Darb wallet but my toll fees are not being deducted.'},
+      {r:'A',t:'Please ensure that Auto Payment is enabled for your vehicle in the Darb app or website — go to your vehicle details and check the auto-payment toggle. If it is already enabled and the issue persists, please raise a case through the Darb app or contact us at 8003009.'},
+    ]},
+  ],
+  scripts_darb_exempt: [
+    {title:'PoD toll exemption – application',cat:'exemption',ex:[
+      {r:'C',t:'How do I apply for a People of Determination toll exemption on Darb?'},
+      {r:'A',t:'Log in to your Darb account, go to Requests, click Add New Request, and choose the People of Determination exemption type. Upload your PoD card from the Ministry of Community Development or Zayed Higher Organization. If the vehicle belongs to a first- or second-degree relative, kinship proof is also required.'},
+      {r:'C',t:'How many vehicles can I exempt?'},
+      {r:'A',t:'Only 1 vehicle per account can be exempted. Once set, you cannot change the exempt vehicle for 90 days.'},
+    ]},
+    {title:'Senior citizen exemption',cat:'exemption',ex:[
+      {r:'C',t:'I\'m a UAE National aged 65. Can I get a toll exemption?'},
+      {r:'A',t:'Yes. UAE citizens aged 60 and above are eligible for a senior citizen toll exemption. No documents are required — just log in to Darb, go to Requests, Add New Request, and select Senior Citizen exemption.'},
+    ]},
+  ],
+
+  // ---- EMAIL TEMPLATES ----
+  emails_maw: [
+    {title:'Grievance confirmation',subject:'Your Grievance Request – Ref [REF#]',body:`Dear [Customer Name],
+
+Thank you for contacting QMobility regarding fine No. [FINE#] issued on [DATE].
+
+Your grievance request has been received and is under review. You will receive a response within 7 working days via SMS to your registered mobile number.
+
+Please note: a 25% discount applies if the fine is paid within 60 days of issuance.
+
+For assistance: 8003009 | customers@qmobility.ae
+
+Best regards,
+QMobility Customer Care`},
+    {title:'Missing documents – permit on hold',subject:'Action Required – Missing Documents | Application [REF#]',body:`Dear [Customer Name],
+
+Your parking permit application (Ref: [REF#]) has been placed on hold as the following document(s) are required:
+- [ ] Tenancy Contract (Tawtheeq)
+- [ ] 3-Month Electricity Bill / ADDC NOC
+- [ ] Vehicle Registration Card (Mulkiya)
+- [ ] Emirates ID
+
+Important: If the required documents are not submitted within 14 working days, the paid amount will not be refunded and the application will be cancelled.
+
+Please log in to TAMM or visit a service center to submit documents.
+
+For assistance: 8003009
+
+Best regards,
+QMobility Customer Care`},
+    {title:'Closed case – no reply (5+ working days)',subject:'Case Closure Notification – Request No. [REF#]',body:`Dear Valued Customer,
+
+We would like to inform you that your request (No. []) related to the service [] has been closed due to not providing the required information within the specified timeframe.
+
+You may reopen or follow up on your request and obtain further details through the Darb application or by calling 8003009.
+
+Thank you for your cooperation. We are always happy to assist you.
+
+---
+
+عزيزنا المتعامل،
+
+نود إشعاركم بأنه تم إغلاق طلبكم رقم [ ] الخاص بخدمة [ ]، وذلك لعدم تزويدنا بالمعلومات المطلوبة خلال الفترة المحددة.
+
+يمكنكم إعادة فتح الطلب أو متابعة حالته من خلال تطبيق درب، أو عبر الرقم 8003009.
+
+نشكر لكم تعاونكم، ونسعد بخدمتكم دائماً.
+
+Best regards,
+QMobility Customer Care`},
+    {title:'Impoundment release instructions',subject:'Vehicle Impoundment – Release Procedure',body:`Dear [Customer Name],
+
+Your vehicle [PLATE] has been impounded. To release it, please visit the relevant impound yard with:
+- Original Emirates ID (owner or authorized person)
+- Vehicle registration card (Mulkiya)
+- Power of Attorney (if you are not the registered owner)
+
+Yard Locations:
+- Abu Dhabi: Al Karamah – 24/7
+- Al Ain: Industrial Area – 8AM to 8PM
+- Mussafah: MN3
+- Al Mafraq: vehicles from outside Abu Dhabi / Bani Yas
+
+Fees: AED 500 towing fee + AED 100/day (first month) + AED 500/month thereafter.
+Payment by credit card only at the yard.
+Vehicles unclaimed for 6+ months are sold at public auction.
+
+For inquiries: 8003009
+
+Best regards,
+QMobility Customer Care`},
+    {title:'MBZ City paid parking notice',subject:'Important – Paid Parking Activated in Mohammed Bin Zayed City',body:`Dear [Customer Name],
+
+Please be informed that paid parking has been activated in the commercial sectors of Mohammed Bin Zayed City (ME10 and ME11) as of 6 April 2026, at a rate of AED 2 per hour.
+
+The system also covers the commercial area along the main street in villa zones Z17-01, Z19, Z20, and Z27. Parking within villa residential areas is restricted to permit holders only.
+
+Payment can be made via: Darb App, TAMM App, SMS to 3009, or on-site payment machines.
+
+For assistance: 8003009 | customers@qmobility.ae
+
+Best regards,
+QMobility Customer Care`},
+  ],
+  emails_darb: [
+    {title:'Darb registration guide',subject:'How to Register for Darb Toll System',body:`Dear [Customer Name],
+
+Thank you for contacting QMobility. Here is how to register for the Darb toll system:
+
+Required:
+- Traffic file number (10 digits – from the vehicle registration card, NOT the driving license)
+- Emirates ID
+- Active email address
+- Mobile number linked to your traffic file
+
+Steps:
+1. Download the Darb app or visit darb.qmobility.ae
+2. Log in using UAE Pass (individual) or create establishment account on website
+3. Complete registration
+4. Register your vehicle(s)
+5. Top up wallet (minimum AED 100 to register a vehicle; AED 50 credited back)
+
+For establishment accounts: use the website only, not the app.
+For inquiries: 8003009 (24/7)
+
+Best regards,
+QMobility Customer Care`},
+    {title:'Wallet refund confirmation',subject:'Wallet Refund – Ref [REF#]',body:`Dear [Customer Name],
+
+A refund of AED [AMOUNT] has been processed to your Darb wallet for transaction Ref [REF#].
+
+The amount will reflect within 1 to 3 working days.
+
+To check balance: Darb app → Wallet section, or darb.qmobility.ae
+
+If not reflected after 3 working days: 8003009 or customers@qmobility.ae
+
+Best regards,
+QMobility Customer Care`},
+    {title:'Closed case – no reply (5+ working days)',subject:'Case Closure Notification – Request No. [REF#]',body:`Dear Valued Customer,
+
+We would like to inform you that your request (No. []) related to the service [] has been closed due to not providing the required information within the specified timeframe.
+
+You may reopen or follow up on your request and obtain further details through the Darb application or by calling 8003009.
+
+Thank you for your cooperation. We are always happy to assist you.
+
+---
+
+عزيزنا المتعامل،
+
+نود إشعاركم بأنه تم إغلاق طلبكم رقم [ ] الخاص بخدمة [ ]، وذلك لعدم تزويدنا بالمعلومات المطلوبة خلال الفترة المحددة.
+
+يمكنكم إعادة فتح الطلب أو متابعة حالته من خلال تطبيق درب، أو عبر الرقم 8003009.
+
+نشكر لكم تعاونكم، ونسعد بخدمتكم دائماً.`},
+  ],
+  chats_maw: [
+    {title:'Fine inquiry opener',text:'Thank you for contacting QMobility. To assist you with your fine, could you please share the fine number or the vehicle plate number?'},
+    {title:'Permit inquiry opener',text:'Thank you for reaching out. To help with your permit inquiry, could you please share your Emirates ID number or the plate number of the vehicle?'},
+    {title:'Grievance submitted confirmation',text:'Your grievance has been successfully submitted. You will receive an SMS update within 7 working days. Fine number: [FINE#]. Reference: [REF#].'},
+    {title:'MBZ City parking clarification',text:'Paid parking is now active in Mohammed Bin Zayed City (ME10 & ME11) at AED 2/hr from April 6, 2026. Payment via Darb App, TAMM, SMS to 3009, or parking machines. Villa residential areas are for permit holders only.'},
+    {title:'Impound release guidance',text:'To release your impounded vehicle, visit the yard with: Emirates ID (original), vehicle registration card (Mulkiya), and Power of Attorney if you\'re not the owner. Fee: AED 500 towing + AED 100/day storage. Credit card only.'},
+  ],
+  chats_darb: [
+    {title:'Wallet top-up guidance',text:'To top up your Darb wallet: open the Darb App → Wallet → Top Up → enter amount → pay by credit/debit card. Minimum top-up is AED 50. Balance reflects immediately.'},
+    {title:'Account registration guidance',text:'To register for Darb: download the Darb App or visit darb.qmobility.ae. Login with UAE Pass. You\'ll need your TC number (from Mulkiya, NOT driving license), Emirates ID, email, and mobile number.'},
+    {title:'Violation notification',text:'A toll gate violation has been recorded on your account. Please log in to the Darb App or website to view the violation details and pay the fine. Fines can also be paid via TAMM. Contact 8003009 for assistance.'},
+    {title:'Auto payment not deducting',text:'If your toll is not being deducted: Darb App → My Vehicles → select vehicle → check Auto Payment is enabled. If already enabled, please raise a case via the app or call 8003009.'},
+    {title:'Refund confirmation',text:'Your refund of AED [AMOUNT] (Ref: [REF#]) has been processed and will reflect in your Darb wallet within 1–3 working days. Check your balance in the Darb App → Wallet section.'},
+  ],
+
+  // ---- FINES TABLE ----
+  fines: [
+    {a:'AED 200',r:'Not paying parking fee',t:false},
+    {a:'AED 400',r:'Parking in disabled space (no valid PoD permit)',t:true},
+    {a:'AED 400',r:'Parking in No Parking zone',t:true},
+    {a:'AED 400',r:'Blocking traffic / fire hydrant / emergency access',t:true},
+    {a:'AED 200',r:'Overstaying time limit',t:false},
+    {a:'AED 200',r:'Parking in wrong color zone / area',t:false},
+    {a:'AED 400',r:'Double parking',t:true},
+    {a:'AED 200',r:'Expired meter / session',t:false},
+    {a:'AED 400',r:'Repeat non-payment offense',t:true},
+    {a:'AED 1,000',r:'Parking in way of fire hydrant (severe)',t:true},
+  ],
+
+  // ---- PERMITS REFERENCE ----
+  permits: [
+    {type:'Residential – Expat 1st Vehicle',fee:'AED 800/year\nor AED 400/6 months',docs:'Tawtheeq, 3-month electricity bill, Mulkiya, Emirates ID',platform:'TAMM / Darb'},
+    {type:'Residential – Expat 2nd–4th Vehicle',fee:'AED 1,200/year',docs:'Same as above',platform:'TAMM / Darb'},
+    {type:'Residential – UAE National',fee:'Free',docs:'Tawtheeq or ownership proof, Mulkiya, Emirates ID',platform:'TAMM / Darb'},
+    {type:'Government / Institution',fee:'AED 1,200/vehicle/year\n(AED 55/day)',docs:'Official letter, employee list, work ID, Emirates ID, Mulkiya, kinship proof (if applicable)',platform:'Email: gov.pr@qmobility.ae'},
+    {type:'Commercial – Government Entity',fee:'AED 200 app fee + AED 55/day\nor AED 10,000/6mo or AED 20,000/yr',docs:'Trade license, NOC, municipality approval',platform:'TAMM'},
+    {type:'Commercial – Private',fee:'AED 200 app fee + AED 85/day\nor AED 15,000/6mo or AED 30,000/yr',docs:'Trade license, NOC, ground plan if required',platform:'TAMM'},
+    {type:'Limited-Term',fee:'Varies by zone and duration',docs:'Emirates ID, trade license (if business)',platform:'TAMM'},
+    {type:'People of Determination (PoD)',fee:'Free',docs:'PoD card (MOC or Zayed Higher Org)',platform:'TAMM / Zayed Higher Org 800555'},
+    {type:'Visitor Villa',fee:'AED 2/hr (expat owner). FREE (Emirati owner)',docs:'No docs – SMS only',platform:'SMS to 3009'},
+    {type:'MSCP Monthly',fee:'AED 1,369 (3mo) / AED 2,738 (6mo) / AED 5,475 (1yr)',docs:'Emirates ID, vehicle Mulkiya',platform:'TAMM / Service Center'},
+  ],
+};
+
+// ==================== SMS DATA ====================
+const SMS_DATA = {
+  darb: {
+    title:'Darb Customer Links SMS', number:'3009',
+    note:'These are standard TAMM/Darb links to send to customers. Copy the exact URL — do not include surrounding text in the copy.',
+    rows:[
+      {scenario:'Darb Registration Guide',desc:'Link for new Darb account registration',template:'https://darb.qmobility.ae/register'},
+      {scenario:'Darb App – iOS',desc:'Apple App Store link',template:'https://apps.apple.com/ae/app/darb/id1234567890'},
+      {scenario:'Darb App – Android',desc:'Google Play link',template:'https://play.google.com/store/apps/details?id=ae.qmobility.darb'},
+      {scenario:'TAMM App – iOS',desc:'TAMM on App Store',template:'https://apps.apple.com/ae/app/tamm/id1069814903'},
+      {scenario:'TAMM App – Android',desc:'TAMM on Google Play',template:'https://play.google.com/store/apps/details?id=ae.gov.tamm'},
+      {scenario:'TAMM Website',desc:'TAMM platform web link',template:'https://tamm.ae'},
+      {scenario:'Darb Website',desc:'Main Darb web portal',template:'https://darb.qmobility.ae'},
+    ]
+  },
+  impound: {
+    title:'Impounding Yard Locations SMS', number:'8003009',
+    note:'Send to customers who need directions to the impound yard. Copy only the map link.',
+    rows:[
+      {scenario:'Al Karamah Impound Yard (Abu Dhabi – 24/7)',desc:'Main AUH impound yard, open 24/7',template:'https://maps.app.goo.gl/5sdreQ9627HRjrMt7'},
+      {scenario:'Al Ain Car Pound (8AM–8PM)',desc:'Al Ain towing yard – industrial area',template:'https://maps.app.goo.gl/46xQZzxhsZiCZ4Ki7'},
+      {scenario:'Musaffah Car Pound (MN3)',desc:'Mussafah impound – MN3 area',template:'https://maps.app.goo.gl/eXe2XcwAuuaU6nJC9'},
+    ]
+  },
+  truck: {
+    title:'Truck & Pick-Up Parking Location SMS', number:'3009',
+    note:'Send to heavy/medium vehicle drivers needing designated truck parking. Copy only the map link.',
+    rows:[
+      {scenario:'Al Ain Trucks & Pick-Ups Yard',desc:'Truck/pickup parking in Al Ain',template:'https://maps.app.goo.gl/6zjrhXLqX3TrmPL99'},
+      {scenario:'Mussafah Trucks & Pick-Ups Yard (M18)',desc:'Truck/pickup parking in Mussafah',template:'https://maps.app.goo.gl/uwxwgUufu1XQQpRU6'},
+      {scenario:'AUH Mini-Trucks & Middle Pick-Ups',desc:'Mini-truck parking Abu Dhabi',template:'https://maps.app.goo.gl/uwxwgUufu1XQQpRU6'},
+      {scenario:'Al Ain Mini-Trucks & Middle Pick-Ups (A8-O2 & A7)',desc:'Al Ain mini-truck and middle pickup parking',template:'https://maps.app.goo.gl/FtVqDHygeb9erA699'},
+    ]
+  },
+  tamm: {
+    title:'TAMM Application Links SMS', number:'',
+    note:'Copy and paste the exact TAMM service link. Do not copy surrounding description text.',
+    rows:[
+      {scenario:'TAMM Resident Permit Application',desc:'Direct link to apply for residential permit',template:'https://tamm.ae/eservice/MAWAQIF/ResidentPermit'},
+      {scenario:'TAMM Fine Payment',desc:'Link to pay parking fines on TAMM',template:'https://tamm.ae/eservice/MAWAQIF/FinePayment'},
+      {scenario:'TAMM Grievance Submission',desc:'Link to file a parking fine grievance',template:'https://tamm.ae/eservice/MAWAQIF/Grievance'},
+      {scenario:'TAMM Commercial Permit',desc:'Link to apply for commercial permit',template:'https://tamm.ae/eservice/MAWAQIF/CommercialPermit'},
+      {scenario:'TAMM PoD Permit Application',desc:'People of Determination permit application',template:'https://tamm.ae/eservice/MAWAQIF/PODPermit'},
+      {scenario:'TAMM Main Portal',desc:'Main TAMM services portal',template:'https://tamm.ae'},
+    ]
+  },
+  docs: {
+    title:'Documents & Email Reference SMS', number:'8003009',
+    note:'Copy only the email address or document name to send. Each row has its own copyable value.',
+    rows:[
+      {scenario:'Government Permits Email',desc:'Email for government / institution permit applications',template:'gov.pr@qmobility.ae'},
+      {scenario:'Customer General Email',desc:'Main customer-facing email for inquiries',template:'customers@qmobility.ae'},
+      {scenario:'Residential Permit Docs Email',desc:'Email for submitting residential permit documents',template:'RP@qmobility.ae'},
+      {scenario:'Abu Dhabi Mall Tenant Permits',desc:'Mall tenant parking queries and permits',template:'Admalls@qmobility.ae'},
+      {scenario:'Careers / HR Email',desc:'Job applications and HR inquiries',template:'careers@qmobility.ae'},
+      {scenario:'Call Center Number',desc:'Main QMobility call center (free, 24/7)',template:'8003009'},
+      {scenario:'SMS Payment Number',desc:'Send SMS to this number for parking payment',template:'3009'},
+      {scenario:'ITC (Non-Mawaqif Sectors)',desc:'ITC call center for non-Mawaqif areas',template:'800850'},
+      {scenario:'Zayed Higher Org (PoD)',desc:'Zayed Higher Organization for PoD matters',template:'800555'},
+    ]
+  },
+  branch: {
+    title:'Branch Locations SMS', number:'',
+    note:'Send to customers who need to visit a service center. Copy the map link.',
+    rows:[
+      {scenario:'Abu Dhabi Branch – Customer Service Center',desc:'Main AUH service center',template:'https://maps.app.goo.gl/AUHBranchQMobility'},
+      {scenario:'Al Ain Branch – Customer Service Center',desc:'Al Ain service center',template:'https://maps.app.goo.gl/AlAinBranchQMobility'},
+      {scenario:'Mussafah Branch',desc:'Mussafah area service center',template:'https://maps.app.goo.gl/MussafahBranchQMobility'},
+    ]
+  },
+  villa: {
+    title:'Villa Permit SMS', number:'3009',
+    note:'For visitor villa parking via SMS. Visitors send SMS from their registered phone number.',
+    rows:[
+      {scenario:'UAE Plate – Visitor Villa Parking',desc:'Visitor sends this SMS from their registered UAE plate phone to 3009',template:'[Sector Code] [Plate Number]'},
+      {scenario:'Visitor Registration Reminder',desc:'Remind permit holder to register visitor number via Darb',template:'Please log in to the Darb App → your Villa Permit → Add Visitor Number, then register the visitor\'s phone number.'},
+    ]
+  },
+  uae: {
+    title:'Public Parking SMS — UAE Plates', number:'3009',
+    note:'Customer sends SMS from a number registered to their UAE plate. Format: [Sector] [Space] for some zones, or simply the plate number in Darb-enabled zones.',
+    rows:[
+      {scenario:'Start parking session (UAE plate)',desc:'Send plate number to start a parking session via SMS',template:'[PLATE_NUMBER]'},
+      {scenario:'Stop parking session',desc:'Send STOP to end the session early',template:'STOP'},
+      {scenario:'Check remaining time',desc:'Check how long is left on current parking session',template:'STATUS'},
+    ]
+  },
+  gcc: {
+    title:'Public Parking SMS — GCC Plates', number:'3009',
+    note:'GCC plates can use SMS to pay for parking. The same number (3009) applies.',
+    rows:[
+      {scenario:'GCC Plate – Start parking session',desc:'GCC plate customers send plate number to start a session',template:'[GCC_PLATE_NUMBER]'},
+      {scenario:'GCC Plate – Stop session',desc:'Send STOP to end the parking session',template:'STOP'},
+    ]
+  },
+};
+
+// ==================== SEARCH INDEX ====================
+let searchIndex = [];
+function buildSearchIndex(){
+  searchIndex=[];
+  // Mawaqif FAQs
+  const sections=[
+    {data:KB.maw_general,domain:'mawaqif',cat:'Mawaqif',sub:'General Information',page:'kb-maw-general'},
+    {data:KB.maw_fines,domain:'mawaqif',cat:'Mawaqif',sub:'Fines & Grievances',page:'kb-maw-fines'},
+    {data:KB.maw_permits,domain:'mawaqif',cat:'Mawaqif',sub:'Permits',page:'kb-maw-permits'},
+    {data:KB.maw_public,domain:'mawaqif',cat:'Mawaqif',sub:'Public Parking',page:'kb-maw-public'},
+    {data:KB.maw_inspection,domain:'mawaqif',cat:'Mawaqif',sub:'Parking Inspection',page:'kb-maw-inspection'},
+    {data:KB.maw_impound,domain:'mawaqif',cat:'Mawaqif',sub:'Car Pound',page:'kb-maw-impound'},
+    {data:KB.maw_mscp,domain:'mawaqif',cat:'Mawaqif',sub:'MSCP',page:'kb-maw-mscp'},
+    {data:KB.maw_private,domain:'mawaqif',cat:'Mawaqif',sub:'Private Parking',page:'kb-maw-private'},
+    {data:KB.darb_general,domain:'darb',cat:'Darb',sub:'General',page:'kb-darb-general'},
+    {data:KB.darb_reg,domain:'darb',cat:'Darb',sub:'Registration',page:'kb-darb-reg'},
+    {data:KB.darb_toll,domain:'darb',cat:'Darb',sub:'Toll & Wallet',page:'kb-darb-toll'},
+    {data:KB.darb_exempt,domain:'darb',cat:'Darb',sub:'Exemptions',page:'kb-darb-exempt'},
+    {data:KB.darb_disputes,domain:'darb',cat:'Darb',sub:'Violations & Grievances',page:'kb-darb-disputes'},
+    {data:KB.darb_ghantout,domain:'darb',cat:'Darb',sub:'Ghantout Gate',page:'kb-darb-ghantout'},
+    {data:KB.ff_general,domain:'freeflow',cat:'Freeflow',sub:'General',page:'kb-ff-general'},
+  ];
+  sections.forEach(s=>{
+    (s.data||[]).forEach(item=>{
+      searchIndex.push({
+        type:'faq',domain:s.domain,cat:s.cat,sub:s.sub,page:s.page,
+        title:item.q,id:item.id||'',
+        text:(item.q+' '+(item.kw||'')+(item.a||'').replace(/<[^>]+>/g,' ')).toLowerCase(),
+        raw:item
+      });
+    });
+  });
+  // Scripts
+  const scripts=[
+    {data:KB.scripts_maw_fines,domain:'scripts',cat:'Mawaqif Scripts',sub:'Fines',page:'v-maw-fines'},
+    {data:KB.scripts_maw_permits,domain:'scripts',cat:'Mawaqif Scripts',sub:'Permits',page:'v-maw-permits'},
+    {data:KB.scripts_maw_impound,domain:'scripts',cat:'Mawaqif Scripts',sub:'Impoundment',page:'v-maw-impound'},
+    {data:KB.scripts_darb_reg,domain:'scripts',cat:'Darb Scripts',sub:'Registration',page:'v-darb-reg'},
+    {data:KB.scripts_darb_wallet,domain:'scripts',cat:'Darb Scripts',sub:'Wallet',page:'v-darb-wallet'},
+    {data:KB.scripts_darb_exempt,domain:'scripts',cat:'Darb Scripts',sub:'Exemptions',page:'v-darb-exempt'},
+  ];
+  scripts.forEach(s=>{
+    (s.data||[]).forEach(item=>{
+      const text=(item.title+' '+item.cat+' '+(item.ex||[]).map(e=>e.t).join(' ')).toLowerCase();
+      searchIndex.push({type:'script',domain:s.domain,cat:s.cat,sub:s.sub,page:s.page,title:item.title,text,raw:item});
+    });
+  });
+  // Email templates
+  KB.emails_maw.forEach(t=>searchIndex.push({type:'template',domain:'templates',cat:'Email Templates',sub:'Mawaqif',page:'em-maw',title:t.title,text:(t.title+' '+t.subject+' '+t.body).toLowerCase(),raw:t}));
+  KB.emails_darb.forEach(t=>searchIndex.push({type:'template',domain:'templates',cat:'Email Templates',sub:'Darb',page:'em-darb',title:t.title,text:(t.title+' '+t.subject+' '+t.body).toLowerCase(),raw:t}));
+  KB.chats_maw.forEach(t=>searchIndex.push({type:'template',domain:'templates',cat:'Chat Templates',sub:'Mawaqif',page:'ch-maw',title:t.title,text:(t.title+' '+t.text).toLowerCase(),raw:t}));
+  KB.chats_darb.forEach(t=>searchIndex.push({type:'template',domain:'templates',cat:'Chat Templates',sub:'Darb',page:'ch-darb',title:t.title,text:(t.title+' '+t.text).toLowerCase(),raw:t}));
+}
+buildSearchIndex();
+
+// ==================== SEARCH LOGIC ====================
+let searchFilter='all';
+function setFilter(f){
+  searchFilter=f;
+  document.querySelectorAll('.sf').forEach(el=>el.classList.toggle('on',el.dataset.f===f));
+  doSearch(document.getElementById('searchBig').value);
+}
+function fuzzyScore(text,query){
+  const words=query.toLowerCase().trim().split(/\s+/);
+  let score=0;
+  words.forEach(w=>{
+    if(text.includes(w)) score+=w.length;
+    // Partial match
+    else if(w.length>3){const idx=text.indexOf(w.slice(0,-1));if(idx>-1)score+=w.length*0.7;}
+  });
+  return score;
+}
+function highlight(str, query){
+  if(!query) return str;
+  const words=query.trim().split(/\s+/).filter(w=>w.length>1);
+  let out=str;
+  words.forEach(w=>{
+    const re=new RegExp('('+w.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+')', 'gi');
+    out=out.replace(re,'<mark>$1</mark>');
+  });
+  return out;
+}
+function doSearch(q){
+  const res=document.getElementById('searchResults');
+  if(!q||q.trim().length<2){res.innerHTML='<div class="search-empty">Start typing to search 200+ articles, scripts, and templates…</div>';return;}
+  let items=searchIndex;
+  if(searchFilter!=='all') items=items.filter(i=>i.domain===searchFilter);
+  const scored=items.map(i=>({...i,score:fuzzyScore(i.text,q)})).filter(i=>i.score>0).sort((a,b)=>b.score-a.score).slice(0,40);
+  if(!scored.length){res.innerHTML='<div class="search-empty">No results found for "'+q+'". Try different keywords.</div>';return;}
+  // Group by type
+  const faqs=scored.filter(i=>i.type==='faq');
+  const scripts=scored.filter(i=>i.type==='script');
+  const templates=scored.filter(i=>i.type==='template');
+  let html='';
+  if(faqs.length){
+    html+=`<div class="search-section-label">Knowledge Base (${faqs.length})</div>`;
+    faqs.slice(0,15).forEach(i=>{
+      html+=`<div class="search-result-item" onclick="closeSearch();go('${i.page}',null);setTimeout(()=>openAccById('${i.id}'),200)">
+        <div class="sr-breadcrumb">${i.cat} › ${i.sub}</div>
+        <div class="sr-title">${highlight(i.title,q)}</div>
+        <div class="sr-snippet">${highlight((i.raw.a||'').replace(/<[^>]+>/g,'').slice(0,120),q)}…</div>
+      </div>`;
+    });
+  }
+  if(scripts.length){
+    html+=`<div class="search-section-label">Voice Scripts (${scripts.length})</div>`;
+    scripts.slice(0,8).forEach(i=>{
+      html+=`<div class="search-result-item" onclick="closeSearch();go('${i.page}',null)">
+        <div class="sr-breadcrumb">${i.cat} › ${i.sub}</div>
+        <div class="sr-title">${highlight(i.title,q)}</div>
+      </div>`;
+    });
+  }
+  if(templates.length){
+    html+=`<div class="search-section-label">Templates (${templates.length})</div>`;
+    templates.slice(0,8).forEach(i=>{
+      html+=`<div class="search-result-item" onclick="closeSearch();go('${i.page}',null)">
+        <div class="sr-breadcrumb">${i.cat} › ${i.sub}</div>
+        <div class="sr-title">${highlight(i.title,q)}</div>
+      </div>`;
+    });
+  }
+  res.innerHTML=html;
+}
+function searchKeyNav(e){if(e.key==='Escape')closeSearch();}
+function openSearch(){
+  document.getElementById('searchOverlay').classList.add('on');
+  setTimeout(()=>document.getElementById('searchBig').focus(),50);
+}
+function closeSearch(){
+  document.getElementById('searchOverlay').classList.remove('on');
+  document.getElementById('searchBig').value='';
+}
+function closeSearchIfBg(e){if(e.target===document.getElementById('searchOverlay'))closeSearch();}
+function openAccById(id){
+  if(!id)return;
+  const el=document.querySelector(`[data-faq-id="${id}"]`);
+  if(el){el.scrollIntoView({behavior:'smooth',block:'center'});const head=el.querySelector('.acc-head');if(head)toggleAcc(head);}
+}
+document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key==='k'){e.preventDefault();openSearch();}});
+
+// ==================== NAV LOGIC ====================
+function go(page, el){
+  S.currentPage=page;
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  if(el) el.classList.add('active');
+  else{
+    document.querySelectorAll('.nav-item').forEach(n=>{
+      if(n.getAttribute('onclick')&&n.getAttribute('onclick').includes(`'${page}'`)) n.classList.add('active');
+    });
+  }
+  // Update breadcrumb
+  updateBreadcrumb(page);
+  // Add to recent
+  addRecent(page);
+  render(page);
+}
+function updateBreadcrumb(p){
+  const map={
+    dashboard:'Main',quick:'Main',updates:'Main',
+    'kb-maw-general':'Knowledge Base › Mawaqif','kb-maw-fines':'Knowledge Base › Mawaqif',
+    'kb-maw-permits':'Knowledge Base › Mawaqif','kb-maw-public':'Knowledge Base › Mawaqif',
+    'kb-maw-inspection':'Knowledge Base › Mawaqif','kb-maw-impound':'Knowledge Base › Mawaqif',
+    'kb-maw-mscp':'Knowledge Base › Mawaqif','kb-maw-private':'Knowledge Base › Mawaqif',
+    'kb-maw-mbz':'Knowledge Base › Mawaqif','kb-maw-parking-sms':'Knowledge Base › Mawaqif',
+    'kb-darb-general':'Knowledge Base › Darb','kb-darb-reg':'Knowledge Base › Darb',
+    'kb-darb-toll':'Knowledge Base › Darb','kb-darb-exempt':'Knowledge Base › Darb',
+    'kb-darb-disputes':'Knowledge Base › Darb','kb-darb-ghantout':'Knowledge Base › Darb',
+    'kb-ff-general':'Knowledge Base › Freeflow','kb-ff-locations':'Knowledge Base › Freeflow','kb-ff-faq':'Knowledge Base › Freeflow',
+    'kb-fines':'Reference','kb-permits':'Reference','vehicle-types':'Reference',
+    'v-maw-fines':'Voice Scripts › Mawaqif','v-maw-permits':'Voice Scripts › Mawaqif','v-maw-impound':'Voice Scripts › Mawaqif',
+    'v-darb-reg':'Voice Scripts › Darb','v-darb-wallet':'Voice Scripts › Darb','v-darb-exempt':'Voice Scripts › Darb',
+    'em-maw':'Templates › Email','em-darb':'Templates › Email',
+    'ch-maw':'Templates › Chat','ch-darb':'Templates › Chat',
+    'sms-darb':'Templates › Salesforce SMS','sms-impound':'Templates › Salesforce SMS',
+    'sms-truck':'Templates › Salesforce SMS','sms-tamm':'Templates › Salesforce SMS',
+    'sms-docs':'Templates › Salesforce SMS','sms-branch':'Templates › Salesforce SMS',
+    'sms-villa':'Templates › Salesforce SMS','sms-uae':'Mawaqif › Public Parking SMS','sms-gcc':'Mawaqif › Public Parking SMS',
+  };
+  document.getElementById('breadcrumb').textContent=map[p]||'Knowledge Base';
+}
+function toggleGroup(id,btn){
+  const sub=document.getElementById(id);
+  const open=sub.classList.toggle('open');
+  btn.classList.toggle('open',open);
+}
+function toggleAcc(head){
+  const body=head.nextElementSibling;
+  const arr=head.querySelector('.acc-arr');
+  const open=body.classList.toggle('on');
+  if(arr) arr.classList.toggle('open',open);
+}
+
+// ==================== RENDER ====================
+const TITLES = {
+  dashboard:'Dashboard',quick:'Quick Reference',updates:'Latest Updates',
+  'kb-maw-general':'Mawaqif — General Information','kb-maw-fines':'Mawaqif — Fines & Grievances',
+  'kb-maw-permits':'Mawaqif — Permits','kb-maw-public':'Mawaqif — Public Parking Payment',
+  'kb-maw-inspection':'Mawaqif — Parking Inspection','kb-maw-impound':'Mawaqif — Car Pound & Impound',
+  'kb-maw-mscp':'Mawaqif — Multi-Storey Car Parks','kb-maw-private':'Mawaqif — Private Parking (ADM)',
+  'kb-maw-mbz':'MBZ City Updates','kb-maw-parking-sms':'Mawaqif — Public Parking SMS',
+  'kb-darb-general':'Darb — General Information','kb-darb-reg':'Darb — Registration & Account',
+  'kb-darb-toll':'Darb — Toll, Wallet & Payments','kb-darb-exempt':'Darb — Exemptions',
+  'kb-darb-disputes':'Darb — Violations & Grievances','kb-darb-ghantout':'Darb — Ghantout Gate',
+  'kb-ff-general':'Freeflow — How It Works','kb-ff-locations':'Freeflow — Locations',
+  'kb-ff-faq':'Freeflow — FAQ','kb-fines':'Fines Table','kb-permits':'Permits Reference','vehicle-types':'Vehicle Types',
+  'v-maw-fines':'Mawaqif Fines Scripts','v-maw-permits':'Mawaqif Permits Scripts','v-maw-impound':'Mawaqif Impound Scripts',
+  'v-darb-reg':'Darb Registration Scripts','v-darb-wallet':'Darb Wallet Scripts','v-darb-exempt':'Darb Exemption Scripts',
+  'em-maw':'Email Templates — Mawaqif','em-darb':'Email Templates — Darb',
+  'ch-maw':'Chat Templates — Mawaqif','ch-darb':'Chat Templates — Darb',
+  'sms-darb':'Salesforce SMS — Darb Customer Links','sms-impound':'Salesforce SMS — Impounding Yard Locations',
+  'sms-truck':'Salesforce SMS — Truck & Pick-Up','sms-tamm':'Salesforce SMS — TAMM Application Links',
+  'sms-docs':'Salesforce SMS — Documents & Email Reference','sms-branch':'Salesforce SMS — Branch Locations',
+  'sms-villa':'Salesforce SMS — Villa Permit','sms-uae':'Public Parking SMS — UAE Plates','sms-gcc':'Public Parking SMS — GCC Plates',
+};
+function render(p){
+  const c=document.getElementById('content');
+  document.getElementById('htitle').textContent=TITLES[p]||p;
+  const R={
+    dashboard:()=>renderDashboard(c),
+    quick:()=>renderQuick(c),
+    updates:()=>renderUpdates(c),
+    'kb-maw-general':()=>renderFAQ(c,KB.maw_general,'Mawaqif General Information'),
+    'kb-maw-fines':()=>renderFAQ(c,KB.maw_fines,'Mawaqif Fines & Grievances'),
+    'kb-maw-permits':()=>renderFAQ(c,KB.maw_permits,'Mawaqif Permits'),
+    'kb-maw-public':()=>renderFAQ(c,KB.maw_public,'Mawaqif Public Parking'),
+    'kb-maw-inspection':()=>renderFAQ(c,KB.maw_inspection,'Mawaqif Parking Inspection'),
+    'kb-maw-impound':()=>renderFAQ(c,KB.maw_impound,'Car Pound & Impound'),
+    'kb-maw-mscp':()=>renderFAQ(c,KB.maw_mscp,'Multi-Storey Car Parks'),
+    'kb-maw-private':()=>renderFAQ(c,KB.maw_private,'Private Parking — Abu Dhabi Mall'),
+    'kb-maw-mbz':()=>renderMBZ(c),
+    'kb-maw-parking-sms':()=>renderParkingSMS(c),
+    'kb-darb-general':()=>renderFAQ(c,KB.darb_general,'Darb General Information'),
+    'kb-darb-reg':()=>renderFAQ(c,KB.darb_reg,'Darb Registration & Account'),
+    'kb-darb-toll':()=>renderFAQ(c,KB.darb_toll,'Darb Toll, Wallet & Payments'),
+    'kb-darb-exempt':()=>renderFAQ(c,KB.darb_exempt,'Darb Exemptions'),
+    'kb-darb-disputes':()=>renderFAQ(c,KB.darb_disputes,'Darb Violations & Grievances'),
+    'kb-darb-ghantout':()=>renderFAQ(c,KB.darb_ghantout,'Ghantout Gate'),
+    'kb-ff-general':()=>renderFreeflow(c),
+    'kb-ff-locations':()=>renderFFLocations(c),
+    'kb-ff-faq':()=>renderFAQ(c,KB.ff_general,'Freeflow FAQ'),
+    'kb-fines':()=>renderFines(c),
+    'kb-permits':()=>renderPermits(c),
+    'vehicle-types':()=>renderVehicleTypes(c),
+    'v-maw-fines':()=>renderScripts(c,KB.scripts_maw_fines,'Mawaqif Fines Scripts'),
+    'v-maw-permits':()=>renderScripts(c,KB.scripts_maw_permits,'Mawaqif Permits Scripts'),
+    'v-maw-impound':()=>renderScripts(c,KB.scripts_maw_impound,'Mawaqif Impound Scripts'),
+    'v-darb-reg':()=>renderScripts(c,KB.scripts_darb_reg,'Darb Registration Scripts'),
+    'v-darb-wallet':()=>renderScripts(c,KB.scripts_darb_wallet,'Darb Wallet Scripts'),
+    'v-darb-exempt':()=>renderScripts(c,KB.scripts_darb_exempt,'Darb Exemption Scripts'),
+    'em-maw':()=>renderEmails(c,KB.emails_maw,'Mawaqif'),
+    'em-darb':()=>renderEmails(c,KB.emails_darb,'Darb'),
+    'ch-maw':()=>renderChats(c,KB.chats_maw,'Mawaqif'),
+    'ch-darb':()=>renderChats(c,KB.chats_darb,'Darb'),
+    'sms-darb':()=>renderSMS(c,'darb'),
+    'sms-impound':()=>renderSMS(c,'impound'),
+    'sms-truck':()=>renderSMS(c,'truck'),
+    'sms-tamm':()=>renderSMS(c,'tamm'),
+    'sms-docs':()=>renderSMS(c,'docs'),
+    'sms-branch':()=>renderSMS(c,'branch'),
+    'sms-villa':()=>renderSMS(c,'villa'),
+    'sms-uae':()=>renderSMS(c,'uae'),
+    'sms-gcc':()=>renderSMS(c,'gcc'),
+  };
+  try{(R[p]||R.dashboard)();}catch(e){c.innerHTML=`<div class="empty-state">Error rendering this page. Please try again or contact admin.</div>`; console.error(e);}
+}
+
+// ---- DASHBOARD ----
+function renderDashboard(c){
+  c.innerHTML=`
+  ${S.isAdmin?`<div class="admin-bar"><span class="admin-label">⚡ Admin Mode Active</span><button class="admin-edit-btn" onclick="go('kb-maw-general',null)">Browse KB</button></div>`:''}
+  <div class="sh"><div class="st">Dashboard</div><div class="sc">QMobility Call Center · Apr 2026</div></div>
+  <div class="warn-box" style="margin-bottom:14px">🔴 <strong>Live Updates:</strong> Freeflow active at W5 & MSCP01. Paid parking activated in MBZ City ME10/ME11 from Apr 6, 2026.</div>
+
+  <div style="margin-bottom:4px;font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.08em">Quick Access</div>
+  <div class="dash-grid" style="margin-top:8px">
+    ${[
+      {label:'Mawaqif',title:'Fines & Grievances',meta:'Fines table, appeals, grievances',page:'kb-maw-fines',color:'var(--mawaqif)'},
+      {label:'Mawaqif',title:'Permits',meta:'Residential, govt, commercial',page:'kb-maw-permits',color:'var(--mawaqif)'},
+      {label:'Darb',title:'Registration & Account',meta:'TC number, vehicles, account',page:'kb-darb-reg',color:'var(--darb)'},
+      {label:'Darb',title:'Toll / Wallet / Payments',meta:'Top-up, auto-pay, violations',page:'kb-darb-toll',color:'var(--darb)'},
+      {label:'Freeflow',title:'Freeflow Info',meta:'W5, MSCP01, how it works',page:'kb-ff-general',color:'var(--freeflow)'},
+      {label:'Scripts',title:'Mawaqif Scripts',meta:'Fines, permits, impound',page:'v-maw-fines',color:'var(--amber)'},
+      {label:'Scripts',title:'Darb Scripts',meta:'Registration, wallet, exemptions',page:'v-darb-reg',color:'var(--amber)'},
+      {label:'Reference',title:'Fines Table',meta:'All fine amounts, towing rules',page:'kb-fines',color:'var(--red)'},
+      {label:'Reference',title:'Permits Reference',meta:'All permit types, fees, docs',page:'kb-permits',color:'var(--amber)'},
+      {label:'SMS',title:'TAMM Application Links',meta:'Links to send to customers',page:'sms-tamm',color:'var(--teal)'},
+      {label:'SMS',title:'Impound Yard Maps',meta:'Map links for towing yards',page:'sms-impound',color:'var(--red)'},
+      {label:'Templates',title:'Email Templates',meta:'Mawaqif and Darb emails',page:'em-maw',color:'var(--purple)'},
+    ].map(d=>`<div class="dash-card" onclick="go('${d.page}',null)">
+      <div class="dash-card-label" style="color:${d.color}">${d.label}</div>
+      <div class="dash-card-title">${d.title}</div>
+      <div class="dash-card-meta">${d.meta}</div>
+    </div>`).join('')}
+  </div>
+
+  <hr class="divider">
+  <div class="sh"><div class="st">Key Contacts</div></div>
+  <div class="tbl-wrap">
+    <table class="contact-table">
+      <tr><td>QMobility Call Center (24/7)</td><td>8003009</td></tr>
+      <tr><td>SMS Payment Number</td><td>3009</td></tr>
+      <tr><td>Customer Email</td><td>customers@qmobility.ae</td></tr>
+      <tr><td>Gov Permits Email</td><td>gov.pr@qmobility.ae</td></tr>
+      <tr><td>Residential Permit Docs</td><td>RP@qmobility.ae</td></tr>
+      <tr><td>Abu Dhabi Mall Tenant</td><td>Admalls@qmobility.ae</td></tr>
+      <tr><td>Careers Email</td><td>careers@qmobility.ae</td></tr>
+      <tr><td>ITC (Non-Mawaqif Sectors)</td><td>800850</td></tr>
+      <tr><td>Zayed Higher Org (PoD)</td><td>800555</td></tr>
+    </table>
+  </div>
+
+  <hr class="divider">
+  <div class="sh"><div class="st">Recent Updates</div></div>
+  ${[
+    {color:'var(--red)',date:'Apr 7, 2026',title:'Freeflow activated – MSCP01'},
+    {color:'var(--red)',date:'Apr 6, 2026',title:'Freeflow activated – W5 near Landmark Tower'},
+    {color:'var(--amber)',date:'Apr 6, 2026',title:'Paid parking activated – MBZ City ME10 & ME11'},
+    {color:'var(--purple)',date:'NEW',title:'Loading/Unloading permit – ALL 3 docs mandatory'},
+  ].map(u=>`<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)">
+    <div style="width:4px;height:4px;border-radius:50%;background:${u.color};flex-shrink:0"></div>
+    <div style="flex:1;font-size:12px;color:var(--text)">${u.title}</div>
+    <div style="font-size:11px;color:var(--text3);flex-shrink:0">${u.date}</div>
+    <button class="copy-btn" onclick="go('updates',null)">View</button>
+  </div>`).join('')}`;
+}
+
+// ---- QUICK REFERENCE ----
+function renderQuick(c){
+  c.innerHTML=`
+  <div class="sh"><div class="st">Quick Reference</div><div class="sc">Key rules, hours, contacts</div></div>
+  <div class="success-box">✓ Use this as your go-to cheat sheet for common call center situations.</div>
+
+  <div class="sblock" style="margin-bottom:12px">
+    <div class="stitle">📞 Key Contact Numbers</div>
+    <table class="tbl"><thead><tr><th>Service</th><th>Contact</th><th>Hours</th></tr></thead><tbody>
+      <tr><td>QMobility Call Center</td><td class="mono text-green">8003009</td><td>24/7</td></tr>
+      <tr><td>SMS Parking Payment</td><td class="mono text-green">3009</td><td>Always</td></tr>
+      <tr><td>ITC (Non-Mawaqif)</td><td class="mono">800850</td><td>Business hrs</td></tr>
+      <tr><td>Zayed Higher Org (PoD)</td><td class="mono">800555</td><td>Business hrs</td></tr>
+      <tr><td>Non-Mawaqif Impound</td><td class="mono">02-5134278</td><td>Business hrs</td></tr>
+      <tr><td>Emirates Auctions</td><td class="mono">800-0666666</td><td>Business hrs</td></tr>
+    </tbody></table>
+  </div>
+
+  <div class="sblock" style="margin-bottom:12px">
+    <div class="stitle">📧 Key Email Addresses</div>
+    <table class="tbl"><thead><tr><th>Purpose</th><th>Email</th></tr></thead><tbody>
+      <tr><td>Customer General Inquiries</td><td class="mono text-blue">customers@qmobility.ae</td></tr>
+      <tr><td>Government / Institution Permits</td><td class="mono text-blue">gov.pr@qmobility.ae</td></tr>
+      <tr><td>Residential Permit Documents</td><td class="mono text-blue">RP@qmobility.ae</td></tr>
+      <tr><td>Abu Dhabi Mall Tenant Parking</td><td class="mono text-blue">Admalls@qmobility.ae</td></tr>
+      <tr><td>Careers / HR</td><td class="mono text-blue">careers@qmobility.ae</td></tr>
+    </tbody></table>
+  </div>
+
+  <div class="sblock" style="margin-bottom:12px">
+    <div class="stitle">🅿️ Parking Rates — Quick Reference</div>
+    <table class="tbl"><thead><tr><th>Zone</th><th>Rate</th><th>Notes</th></tr></thead><tbody>
+      <tr><td>Standard Public Parking</td><td class="mono text-amber">AED 2/hr</td><td>Abu Dhabi, Al Ain, Mussafah</td></tr>
+      <tr><td>MSCP (Multi-Storey)</td><td class="mono text-amber">AED 2/hr (max AED 15/day)</td><td>Freeflow payment</td></tr>
+      <tr><td>Premium Areas</td><td class="mono text-amber">AED 4/hr</td><td>Select zones</td></tr>
+      <tr><td>Abu Dhabi Mall</td><td>3 hrs FREE → AED 10/hr</td><td>8AM–2AM</td></tr>
+      <tr><td>MBZ City ME10/ME11</td><td class="mono text-amber">AED 2/hr</td><td>From Apr 6, 2026</td></tr>
+      <tr><td>Villa Visitor (SMS)</td><td class="mono text-amber">AED 2/hr (expat) / Free (Emirati)</td><td>SMS to 3009</td></tr>
+    </tbody></table>
+  </div>
+
+  <div class="sblock" style="margin-bottom:12px">
+    <div class="stitle">⚡ Fine Quick Facts</div>
+    <div style="font-size:12.5px;color:var(--text2);line-height:1.8">
+      • <strong>25% discount</strong> if paid within 60 days of issuance<br>
+      • <strong>No black points</strong> on any Mawaqif fine<br>
+      • No second fine for same reason + same sector + same day<br>
+      • Towing fee: <strong>AED 500</strong> + AED 100/day storage<br>
+      • Vehicles unclaimed for <strong>6+ months</strong> → sold at auction<br>
+      • Impound payment: <strong>credit card only</strong>
+    </div>
+  </div>
+
+  <div class="sblock" style="margin-bottom:12px">
+    <div class="stitle">🚗 Darb Registration Quick Facts</div>
+    <div style="font-size:12.5px;color:var(--text2);line-height:1.8">
+      • Registration fee: <strong>AED 50/vehicle</strong> (AED 50 credited back)<br>
+      • Minimum wallet to register: <strong>AED 100</strong><br>
+      • TC number from <strong>Mulkiya (vehicle registration card)</strong> — NOT driving license<br>
+      • Individual: use Darb App or website, login via UAE Pass<br>
+      • Establishment: <strong>website only</strong> (not app)<br>
+      • Toll: AED 4 (peak) / AED 2 (off-peak) · Max AED 16/day
+    </div>
+  </div>`;
+}
+
+// ---- UPDATES ----
+function renderUpdates(c){
+  c.innerHTML=`<div class="sh"><div class="st">Latest Updates</div><div class="sc">April 2026</div></div>
+  <div class="danger-box">🔴 Critical — All agents must review these updates. Live as of April 6–7, 2026.</div>
+  ${[
+    {date:'Apr 7, 2026',color:'var(--red)',title:'Freeflow activated – MSCP01 (Multi-Storey Building 1)',body:'Barrierless/freeflow parking activated at MSCP01. MSCP tariff: AED 2/hr, max AED 15/day. Payment auto-deducted from DARB wallet after exit. Agents: record any unknown edge cases and share daily with supervisor.'},
+    {date:'Apr 6, 2026',color:'var(--red)',title:'Freeflow activated – W5 (near Landmark Tower)',body:'Barrierless/freeflow activated at W5 sector near Landmark Tower. On-street rates apply (AED 2/hr). Payment auto-deducted from DARB wallet upon exit.\nLocation: https://maps.app.goo.gl/wj7GgDD7AT1qNvrR6'},
+    {date:'Apr 6, 2026',color:'var(--amber)',title:'Paid parking activated – MBZ City ME10 & ME11',body:'Commercial sectors ME10 and ME11 in Mohammed Bin Zayed City are now paid parking (AED 2/hr). Also includes commercial areas along main street in villa zones Z17-01, Z19, Z20, Z27. Villa residential areas: permit holders only. Total spaces: 11,030.'},
+    {date:'NEW',color:'var(--purple)',title:'Loading/Unloading permit – ALL 3 documents mandatory',body:'Before raising a loading/unloading permit request, agents MUST confirm customer has ALL THREE documents:\n1. Letter explaining the request\n2. Trade License\n3. Site Plan\n\nIf ANY document is missing → the request will be rejected. Do NOT raise it.'},
+    {date:'NEW',color:'var(--darb)',title:'Closed Salesforce cases – standard template',body:'For cases with 5+ working days of no customer reply, use this template:\n\nEN: "Your request (No. []) related to the service [] has been closed due to not providing the required information. You may reopen via Darb app or 8003009."\n\nAR: "نود إشعاركم بأنه تم إغلاق طلبكم رقم [] الخاص بخدمة []، لعدم تزويدنا بالمعلومات المطلوبة. يمكنكم إعادة فتح الطلب عبر تطبيق درب أو 8003009."'},
+    {date:'Mar 11, 2026',color:'var(--green)',title:'4 Multi-Storey buildings open in MBZ City',body:'New parking buildings in MBZ commercial sectors: ME9 (682 spaces), ME10 (346 spaces – 2 buildings), ME12 (418 spaces). Total: 1,446 spaces. Currently FREE of charge. Fee implementation date to be announced.'},
+    {date:'Ongoing',color:'var(--text3)',title:'Ghantout Gate – Installed, NOT Active',body:'New toll gate on Sheikh Maktoum bin Rashid Road. Currently installed but NOT activated. No fees.\n\nAgent response: "The gate is currently not active. Fees will be announced officially when implemented."'},
+  ].map(u=>`<div class="update-item" style="border-left-color:${u.color}">
+    <div class="update-title">
+      <span>${u.title}</span>
+      <span class="badge" style="background:rgba(255,255,255,.08);color:var(--text2)">${u.date}</span>
+    </div>
+    <div class="update-body">${u.body}</div>
+  </div>`).join('')}`;
+}
+
+// ---- FAQ RENDER ----
+function renderFAQ(c, data, label){
+  if(!data||!data.length){c.innerHTML=`<div class="empty-state">No FAQ items in this section yet.</div>`;return;}
+  let localData=data;
+  c.innerHTML=`<div class="sh"><div class="st">${label}</div><div class="sc">${data.length} articles</div></div>
+  <input class="global-search" style="margin-bottom:14px;padding-left:12px" placeholder="Filter this section..." oninput="filterLocal(this.value)">
+  <div id="faq-list">
+  ${data.map(f=>`
+    <div class="acc" data-faq-id="${f.id||''}">
+      <div class="acc-head" onclick="toggleAcc(this)">
+        <div class="acc-q">${f.q}</div>
+        <div class="acc-meta">
+          ${f.id?`<span class="acc-id">${f.id}</span>`:''}
+          <span class="acc-arr">▶</span>
+        </div>
+      </div>
+      <div class="acc-body">
+        <div class="faq-answer">${f.a}</div>
+        ${S.isAdmin?`<div style="margin-top:10px;padding-top:8px;border-top:1px solid var(--border);display:flex;gap:6px">
+          <button class="btn-sec" onclick="adminEditFAQ('${f.id||''}')">Edit</button>
+          <button class="pin-btn ${S.pins.includes(f.id)?'pinned':''}" onclick="togglePin('${f.id}','${f.q.replace(/'/g,'\\\'')}')" title="Pin">${S.pins.includes(f.id)?'★':'☆'}</button>
+        </div>`:`<div style="margin-top:10px;padding-top:8px;border-top:1px solid var(--border);display:flex;gap:6px">
+          <button class="pin-btn ${S.pins.includes(f.id)?'pinned':''}" onclick="togglePin('${f.id}','${f.q.replace(/'/g,'\\\'')}')" title="${S.pins.includes(f.id)?'Unpin':'Pin this article'}">★</button>
+        </div>`}
+      </div>
+    </div>`).join('')}
+  </div>`;
+  // store for filtering
+  window._faqLocal=data;
+}
+function filterLocal(v){
+  const val=v.toLowerCase().trim();
+  document.querySelectorAll('#faq-list .acc').forEach((el,i)=>{
+    if(!window._faqLocal)return;
+    const f=window._faqLocal[i];
+    if(!f)return;
+    el.style.display=(!val||(f.q+' '+(f.kw||'')+(f.a||'').replace(/<[^>]+>/g,' ')).toLowerCase().includes(val))?'':'none';
+  });
+}
+
+// ---- SCRIPTS ----
+function renderScripts(c, scripts, label){
+  c.innerHTML=`<div class="sh"><div class="st">${label}</div><div class="sc">${scripts.length} scripts</div></div>`+
+  scripts.map(s=>`
+    <div class="sblock">
+      <div class="stitle"><span>${s.title}</span><span class="badge bG">${s.cat}</span></div>
+      ${s.ex.map(e=>`<div class="sexch"><div class="srole ${e.r==='C'?'c':'a'}">${e.r==='C'?'CUSTOMER':'AGENT'}</div><div class="stext">${e.t}</div></div>`).join('')}
+      ${s.note?`<div class="warn-box" style="margin-top:8px">⚠ ${s.note}</div>`:''}
+    </div>`).join('');
+}
+
+// ---- EMAILS ----
+function renderEmails(c, templates, label){
+  window._ems=templates;
+  c.innerHTML=`<div class="sh"><div class="st">Email Templates — ${label}</div><div class="sc">${templates.length} templates</div></div>`+
+  templates.map((t,i)=>`
+    <div class="sblock">
+      <div class="stitle">
+        <span>${t.title}</span>
+        <button class="copy-btn" onclick="cpEmail(${i})" id="ecb${i}">📋 Copy Full</button>
+      </div>
+      <div style="font-size:11px;color:var(--text3);margin-bottom:8px">Subject: <span style="color:var(--text2);font-weight:500">${t.subject}</span></div>
+      <pre class="email">${t.body}</pre>
+    </div>`).join('');
+}
+function cpEmail(i){
+  if(!window._ems)return;
+  const t=window._ems[i];
+  navigator.clipboard.writeText(`Subject: ${t.subject}\n\n${t.body}`);
+  showToast('Email copied to clipboard ✓','ok');
+  const btn=document.getElementById('ecb'+i);
+  if(btn){btn.textContent='✓ Copied';btn.classList.add('copied');setTimeout(()=>{btn.textContent='📋 Copy Full';btn.classList.remove('copied');},2000);}
+}
+
+// ---- CHATS ----
+function renderChats(c, templates, label){
+  c.innerHTML=`<div class="sh"><div class="st">Chat Templates — ${label}</div><div class="sc">${templates.length} templates</div></div>
+  <div class="grid">`+
+  templates.map((t,i)=>`
+    <div class="card">
+      <div class="card-head"><div class="card-title">${t.title}</div>
+        <button class="copy-btn" id="ccb${i}" onclick="cpChat(${i})">📋 Copy</button>
+      </div>
+      <div class="card-body">${t.text}</div>
+    </div>`).join('')+'</div>';
+  window._chats=templates;
+}
+function cpChat(i){
+  if(!window._chats)return;
+  navigator.clipboard.writeText(window._chats[i].text);
+  showToast('Chat template copied ✓','ok');
+  const btn=document.getElementById('ccb'+i);
+  if(btn){btn.textContent='✓';btn.classList.add('copied');setTimeout(()=>{btn.textContent='📋 Copy';btn.classList.remove('copied');},2000);}
+}
+
+// ---- SMS ----
+function renderSMS(c, key){
+  const d=SMS_DATA[key];
+  if(!d){c.innerHTML='<div class="empty-state">SMS section not found.</div>';return;}
+  let html=`<div class="sh"><div class="st">${d.title}</div>${d.number?`<div class="sc">Send to: <strong>${d.number}</strong></div>`:''}</div>`;
+  if(d.note) html+=`<div class="info-box">ℹ ${d.note}</div>`;
+  html+=`<div class="tbl-wrap"><div style="padding:0">`;
+  d.rows.forEach((row,i)=>{
+    html+=`<div class="sms-row">
+      <div>
+        <div class="sms-scenario">${row.scenario}</div>
+        <div class="sms-desc">${row.desc||''}</div>
+      </div>
+      <div class="sms-copyable" id="sms-${key}-${i}">${row.template}</div>
+      <div class="sms-actions">
+        <button class="copy-btn" id="scb-${key}-${i}" onclick="cpSMS('${key}',${i})">📋 Copy</button>
+        ${row.template.startsWith('http')?`<a href="${row.template}" target="_blank" class="copy-btn" style="text-decoration:none">🔗 Open</a>`:''}
+      </div>
+    </div>`;
+  });
+  html+=`</div></div>`;
+  c.innerHTML=html;
+}
+function cpSMS(key,i){
+  const el=document.getElementById(`sms-${key}-${i}`);
+  if(!el)return;
+  navigator.clipboard.writeText(el.textContent);
+  showToast('Copied! ✓','ok');
+  const btn=document.getElementById(`scb-${key}-${i}`);
+  if(btn){btn.textContent='✓ Copied';btn.classList.add('copied');setTimeout(()=>{btn.textContent='📋 Copy';btn.classList.remove('copied');},2000);}
+}
+
+// ---- PUBLIC PARKING SMS ----
+function renderParkingSMS(c){
+  c.innerHTML=`<div class="sh"><div class="st">Public Parking SMS Payment</div><div class="sc">Mawaqif paid parking via SMS</div></div>
+  <div class="info-box">ℹ SMS parking payment is available for <strong>UAE and GCC plates</strong>. Send the plate number to <strong>3009</strong> to start a session.</div>
+  <div class="sblock" style="margin-bottom:12px">
+    <div class="stitle">UAE Plates — Public Parking SMS</div>
+    <div style="font-size:12.5px;color:var(--text2);line-height:1.8">
+      1. Customer sends their <strong>plate number</strong> to <strong>3009</strong> from their registered phone<br>
+      2. System starts a parking session linked to their account<br>
+      3. To stop early, customer sends <strong>STOP</strong> to 3009<br>
+      4. To check remaining time, send <strong>STATUS</strong> to 3009<br>
+      5. For visitor villa parking: visitor sends from pre-registered phone → parking starts automatically
+    </div>
+  </div>
+  <div class="sblock" style="margin-bottom:12px">
+    <div class="stitle">GCC Plates — Public Parking SMS</div>
+    <div style="font-size:12.5px;color:var(--text2);line-height:1.8">
+      GCC plate customers follow the same process: send plate number to <strong>3009</strong>.<br>
+      No Darb account registration is required for GCC plates using SMS parking.<br>
+      Payment is charged to the phone account or registered card.
+    </div>
+  </div>
+  <div class="warn-box">⚠ If a customer says SMS is not working: verify they are using the phone number registered to the plate/account. Unregistered numbers will not trigger a parking session.</div>`;
+}
+
+// ---- MBZ CITY ----
+function renderMBZ(c){
+  c.innerHTML=`<div class="sh"><div class="st">MBZ City Updates</div><div class="sc">Mohammed Bin Zayed City</div></div>
+  <div class="danger-box">🔴 LIVE from April 6, 2026 — Paid parking is now active in MBZ City commercial sectors.</div>
+  <div class="sblock" style="margin-bottom:12px">
+    <div class="stitle">Paid Parking Zones — MBZ City</div>
+    <table class="tbl"><thead><tr><th>Zone</th><th>Type</th><th>Rate</th><th>Active From</th></tr></thead><tbody>
+      <tr><td>ME10 (Commercial)</td><td>Paid Public Parking</td><td class="mono text-amber">AED 2/hr</td><td>Apr 6, 2026</td></tr>
+      <tr><td>ME11 (Commercial)</td><td>Paid Public Parking</td><td class="mono text-amber">AED 2/hr</td><td>Apr 6, 2026</td></tr>
+      <tr><td>Villa zones Z17-01, Z19, Z20, Z27 (Main street commercial areas)</td><td>Paid Public Parking</td><td class="mono text-amber">AED 2/hr</td><td>Apr 6, 2026</td></tr>
+      <tr><td>Villa Residential Areas</td><td>Permit Holders Only</td><td>N/A (Permit)</td><td>Ongoing</td></tr>
+    </tbody></table>
+  </div>
+  <div class="sblock" style="margin-bottom:12px">
+    <div class="stitle">New Multi-Storey Buildings in MBZ</div>
+    <table class="tbl"><thead><tr><th>Building</th><th>Spaces</th><th>Status</th></tr></thead><tbody>
+      <tr><td>ME9</td><td>682</td><td class="text-green">Open — Currently FREE</td></tr>
+      <tr><td>ME10 (Building 1)</td><td>~173</td><td class="text-green">Open — Currently FREE</td></tr>
+      <tr><td>ME10 (Building 2)</td><td>~173</td><td class="text-green">Open — Currently FREE</td></tr>
+      <tr><td>ME12</td><td>418</td><td class="text-green">Open — Currently FREE</td></tr>
+    </tbody></table>
+    <div class="warn-box" style="margin-top:8px">⚠ Fee implementation date for multi-storey buildings is to be announced separately. Currently FREE.</div>
+  </div>
+  <div class="sblock">
+    <div class="stitle">Agent Script — Customer received MBZ Fine</div>
+    <div class="sexch"><div class="srole c">CUSTOMER</div><div class="stext">I got a fine in Mohammed Bin Zayed City. Is parking paid there now?</div></div>
+    <div class="sexch"><div class="srole a">AGENT</div><div class="stext">Yes. Paid parking was activated in ME10 and ME11 commercial sectors, as well as villa zone commercial areas (Z17-01, Z19, Z20, Z27), starting April 6, 2026. The fee is AED 2 per hour. You can pay via Darb App, TAMM App, SMS to 3009, or on-site payment machines. A 25% discount applies if paid within 60 days.</div></div>
+    <div class="sexch"><div class="srole c">CUSTOMER</div><div class="stext">Can I park in the villa areas?</div></div>
+    <div class="sexch"><div class="srole a">AGENT</div><div class="stext">Parking in villa residential areas is for permit holders only. The commercial areas along the main street are the paid public parking zones.</div></div>
+  </div>`;
+}
+
+// ---- FREEFLOW ----
+function renderFreeflow(c){
+  c.innerHTML=`<div class="sh"><div class="st">Freeflow / Barrierless Parking</div><div class="sc">Live as of Apr 6–7, 2026</div></div>
+  <div class="success-box">✓ Freeflow is LIVE. Payment auto-deducted from DARB wallet upon exit. No barriers or payment machines at location.</div>
+  <div class="sblock" style="margin-bottom:12px">
+    <div class="stitle">How Freeflow Works</div>
+    <div style="font-size:12.5px;color:var(--text2);line-height:1.9">
+      <strong>1. Enter:</strong> Drive in — cameras read your plate number automatically. No ticket, no barrier.<br>
+      <strong>2. Park:</strong> Use the space normally for the required duration.<br>
+      <strong>3. Exit:</strong> Drive out — cameras confirm exit time.<br>
+      <strong>4. Payment:</strong> Fee automatically deducted from your DARB wallet after exit.<br>
+      <strong>5. Ensure balance:</strong> Make sure your DARB wallet has sufficient balance before parking.
+    </div>
+  </div>
+  <div class="warn-box">⚠ Freeflow is new in Abu Dhabi public parking. If customers report unfamiliar edge cases, <strong>record the full case details</strong> and share with the supervisor on a daily basis for review and response alignment.</div>
+  ${renderFAQ_inline(KB.ff_general,'Freeflow FAQ')}`;
+}
+function renderFFLocations(c){
+  c.innerHTML=`<div class="sh"><div class="st">Freeflow Locations</div></div>
+  <div class="grid" style="margin-bottom:16px">
+    ${[
+      {n:'W5 — Near Landmark Tower',d:'Activated April 6, 2026',r:'AED 2/hr (standard on-street rate)',l:'https://maps.app.goo.gl/wj7GgDD7AT1qNvrR6',color:'var(--mawaqif)'},
+      {n:'MSCP01 — Multi-Storey Building 1',d:'Activated April 7, 2026',r:'AED 2/hr · Max AED 15/day',l:null,color:'var(--darb)'},
+      {n:'Abu Dhabi Mall',d:'Previously active private freeflow',r:'3 hrs FREE (8AM–2AM) · AED 10/hr after',l:null,color:'var(--freeflow)'},
+    ].map(x=>`<div class="card">
+      <div class="card-head"><div class="card-title">${x.n}</div><span class="badge bF">Freeflow</span></div>
+      <div class="card-body" style="margin-bottom:4px">${x.d}</div>
+      <div class="card-body" style="margin-bottom:6px"><strong>Rates:</strong> ${x.r}</div>
+      ${x.l?`<a href="${x.l}" target="_blank" class="link-btn">📍 View on Maps</a>`:''}
+    </div>`).join('')}
+  </div>`;
+}
+function renderFAQ_inline(faqs, label){
+  return `<div class="sh" style="margin-top:16px"><div class="st">${label}</div></div>`+
+  faqs.map(f=>`<div class="acc"><div class="acc-head" onclick="toggleAcc(this)"><div class="acc-q">${f.q}</div><span class="acc-arr">▶</span></div><div class="acc-body"><div class="faq-answer">${f.a}</div></div></div>`).join('');
+}
+
+// ---- FINES ----
+function renderFines(c){
+  c.innerHTML=`<div class="sh"><div class="st">Fines Reference Table</div></div>
+  <div class="info-box">ℹ No black points on Mawaqif fines. No second fine for same reason + same sector + same day. <strong>25% discount</strong> if paid within 60 days.</div>
+  <div class="sh"><div class="st" style="font-size:13px">Mawaqif Parking Fines</div></div>
+  <div class="tbl-wrap"><table class="tbl"><thead><tr><th>Fine Amount</th><th>Violation</th><th>Towed?</th></tr></thead><tbody>
+  ${KB.fines.map(f=>`<tr><td style="font-family:var(--mono);color:var(--amber)">${f.a}</td><td>${f.r}</td><td>${f.t?'<span style="color:var(--red);font-weight:600">✦ TOW</span>':'<span style="color:var(--text3)">–</span>'}</td></tr>`).join('')}
+  </tbody></table></div>
+  <div class="sh" style="margin-top:18px"><div class="st" style="font-size:13px">Darb Toll Violations</div></div>
+  <div class="tbl-wrap"><table class="tbl"><thead><tr><th>Violation</th><th>Fine</th><th>Grace Period</th></tr></thead><tbody>
+    <tr><td>Non-registration – non-AD vehicle</td><td style="color:var(--amber);font-family:var(--mono)">AED 50/day</td><td>5 working days</td></tr>
+    <tr><td>Plate tampering</td><td style="color:var(--red);font-family:var(--mono)">AED 10,000</td><td>—</td></tr>
+    <tr><td>Toll gate damage</td><td style="color:var(--red);font-family:var(--mono)">AED 10,000</td><td>—</td></tr>
+    <tr><td>Maximum per violation</td><td style="color:var(--amber);font-family:var(--mono)">AED 10,000</td><td>—</td></tr>
+    <tr><td>Maximum annual cap</td><td style="color:var(--amber);font-family:var(--mono)">AED 25,000</td><td>—</td></tr>
+  </tbody></table></div>`;
+}
+
+// ---- PERMITS ----
+let _pdata=[];
+function renderPermits(c){
+  _pdata=KB.permits;
+  c.innerHTML=`<div class="sh"><div class="st">Permits Reference</div><div class="sc">${KB.permits.length} permit types</div></div>
+  <input class="global-search" style="margin-bottom:14px;padding-left:12px" placeholder="Search permits..." oninput="filterPermits(this.value)">
+  <div id="permit-list">
+  ${KB.permits.map((p,i)=>`
+    <div class="acc permit-item">
+      <div class="acc-head" onclick="toggleAcc(this)">
+        <div class="acc-q">${p.type}</div><span class="acc-arr">▶</span>
+      </div>
+      <div class="acc-body">
+        <div style="margin-bottom:8px"><div style="font-size:10.5px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:3px">Fees</div><div style="white-space:pre-line;font-size:12.5px;color:var(--text)">${p.fee}</div></div>
+        <div style="margin-bottom:8px"><div style="font-size:10.5px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:3px">Required Documents</div><div style="font-size:12.5px;color:var(--text2)">${p.docs}</div></div>
+        <div><div style="font-size:10.5px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:3px">Application Channel</div><div style="font-size:12.5px;color:var(--darb)">${p.platform}</div></div>
+      </div>
+    </div>`).join('')}
+  </div>`;
+}
+function filterPermits(v){
+  const val=v.toLowerCase().trim();
+  document.querySelectorAll('.permit-item').forEach((el,i)=>{
+    const p=_pdata[i];
+    if(!p)return;
+    el.style.display=(!val||(p.type+' '+p.docs+' '+p.platform).toLowerCase().includes(val))?'':'none';
+  });
+}
+
+// ---- VEHICLE TYPES ----
+function renderVehicleTypes(c){
+  c.innerHTML=`<div class="sh"><div class="st">Vehicle Types — Parking Rules</div><div class="sc">Updated Apr 2026</div></div>
+  <div class="info-box">ℹ Use this to quickly determine how a vehicle type can park and what permits are available.</div>
+  <div class="sblock" style="border-left:3px solid var(--green);margin-bottom:10px">
+    <div class="stitle">🚗 Regular Cars / Small Vans (≤7 seats)</div>
+    <div style="font-size:12.5px;color:var(--text2);line-height:1.8"><strong style="color:var(--green)">Same rules as regular private cars.</strong><br>
+    • Park in any standard Mawaqif spaces · Can apply for all permit types · Can pay via SMS, Darb App, TAMM<br>
+    • Examples: sedans, SUVs, Toyota HiAce (≤7 seats), minivans configured for 7 passengers</div>
+  </div>
+  <div class="sblock" style="border-left:3px solid var(--teal);margin-bottom:10px">
+    <div class="stitle">🛻 Light Pickups (Hilux / Ford Ranger / GMC-type)</div>
+    <div style="font-size:12.5px;color:var(--text2);line-height:1.8"><strong style="color:var(--teal)">Treated like regular private cars.</strong><br>
+    • Park in any standard Mawaqif spaces · Can apply for residential and other permits · Pay via SMS, Darb, TAMM<br>
+    <div class="warn-box" style="margin-top:8px">⚠ Applies to light-duty pickups. Vehicles over 1 ton use heavy pickup rules below.</div></div>
+  </div>
+  <div class="sblock" style="border-left:3px solid var(--amber);margin-bottom:10px">
+    <div class="stitle">🚛 Heavy Pickups (>1 ton) / Medium Trucks</div>
+    <div style="font-size:12.5px;color:var(--text2);line-height:1.8"><strong style="color:var(--amber)">Must use designated truck/pickup areas only.</strong><br>
+    • NOT allowed in regular public parking · No permits or SMS parking · Must use designated zones during permitted hours</div>
+    <table class="tbl" style="margin-top:10px"><thead><tr><th>Location</th><th>Permitted Hours</th><th>Sectors</th></tr></thead><tbody>
+      <tr><td>Abu Dhabi</td><td>8AM–9PM</td><td>E3-O1, E3-O2, E4-O1, E4-O2, E18-O3, E20-O2, E13</td></tr>
+      <tr><td>Al Ain</td><td>8AM–9PM</td><td>8A-O2, Sector 7</td></tr>
+      <tr><td>Mussafah</td><td>6AM–11PM</td><td>All sectors except M9 (loading/unloading only)</td></tr>
+    </tbody></table>
+  </div>
+  <div class="sblock" style="border-left:3px solid var(--red);margin-bottom:10px">
+    <div class="stitle">🚚 Heavy Trucks / Large Buses</div>
+    <div style="font-size:12.5px;color:var(--text2);line-height:1.8"><strong style="color:var(--red)">NOT allowed in any Abu Dhabi public parking.</strong><br>
+    Must use dedicated heavy vehicle yards only (available 24/7):</div>
+    <table class="tbl" style="margin-top:8px"><thead><tr><th>Location</th><th>Hours</th></tr></thead><tbody>
+      <tr><td>Mussafah M-18</td><td>24/7</td></tr>
+      <tr><td>Al Ain (Next to Agility)</td><td>24/7</td></tr>
+      <tr><td>Saeed Yard</td><td>24/7</td></tr>
+    </tbody></table>
+  </div>
+  <div class="sblock" style="border-left:3px solid var(--purple)">
+    <div class="stitle">📊 Quick Decision Table</div>
+    <table class="tbl"><thead><tr><th>Vehicle Type</th><th>Park Like Car?</th><th>Permit Available?</th><th>SMS Payment?</th></tr></thead><tbody>
+      <tr><td>Car / SUV / Small Van (≤7 seats)</td><td class="text-green">✓ Yes</td><td class="text-green">✓ Yes</td><td class="text-green">✓ Yes</td></tr>
+      <tr><td>Light pickup (Hilux/Ranger-type)</td><td class="text-green">✓ Yes</td><td class="text-green">✓ Yes</td><td class="text-green">✓ Yes</td></tr>
+      <tr><td>Motorcycle</td><td class="text-green">✓ Yes (free)</td><td>N/A</td><td>N/A — Darb exempt</td></tr>
+      <tr><td>Heavy pickup (>1 ton)</td><td class="text-red">✗ No</td><td class="text-red">✗ No</td><td class="text-red">✗ No — designated zones</td></tr>
+      <tr><td>Medium/heavy trucks</td><td class="text-red">✗ No</td><td class="text-red">✗ No</td><td class="text-red">✗ No — designated zones</td></tr>
+      <tr><td>Large buses</td><td class="text-red">✗ No</td><td class="text-red">✗ No</td><td class="text-red">✗ No — Mussafah M18</td></tr>
+    </tbody></table>
+  </div>`;
+}
+
+// ==================== THEME / LANG ====================
+function toggleTheme(){
+  S.theme=S.theme==='dark'?'light':'dark';
+  document.documentElement.setAttribute('data-theme',S.theme);
+  document.getElementById('themeBtn').textContent=S.theme==='dark'?'☀ Light':'🌙 Dark';
+  localStorage.setItem('kb_theme',S.theme);
+}
+function toggleLang(){
+  S.lang=S.lang==='en'?'ar':'en';
+  localStorage.setItem('kb_lang',S.lang);
+  const isAR=S.lang==='ar';
+  document.documentElement.setAttribute('dir',isAR?'rtl':'ltr');
+  document.documentElement.setAttribute('lang',isAR?'ar':'en');
+  document.getElementById('langBtn').textContent=isAR?'AR / EN':'EN / AR';
+  document.getElementById('logoSub').textContent=isAR?'مركز الاتصالات · أبريل 2026':'Call Center · Apr 2026';
+  // Update nav text
+  document.querySelectorAll('[data-en]').forEach(el=>{
+    el.textContent=isAR?(el.dataset.ar||el.dataset.en):el.dataset.en;
+  });
+  document.querySelectorAll('.nav-text[data-en]').forEach(el=>{
+    el.textContent=isAR?(el.dataset.ar||el.dataset.en):el.dataset.en;
+  });
+  showToast(isAR?'تم التبديل إلى العربية':'Switched to English','ok');
+}
+
+// ==================== ADMIN ====================
+function toggleAdmin(){
+  if(S.isAdmin){
+    S.isAdmin=false;
+    document.getElementById('adminBtn').textContent='🔐 Admin';
+    document.getElementById('modeLabel').textContent='👁 View Mode';
+    showToast('Switched to View Mode','ok');
+    render(S.currentPage);
+  }else{
+    document.getElementById('loginModal').classList.remove('hidden');
+    setTimeout(()=>document.getElementById('adminUser').focus(),50);
+  }
+}
+function doLogin(){
+  const u=document.getElementById('adminUser').value.trim();
+  const p=document.getElementById('adminPass').value.trim();
+  if(u===ADMIN_USER&&p===ADMIN_PASS){
+    S.isAdmin=true;
+    closeLogin();
+    document.getElementById('adminBtn').textContent='⚡ Admin Active';
+    document.getElementById('modeLabel').textContent='⚡ Admin Mode';
+    showToast('Admin mode activated','ok');
+    render(S.currentPage);
+  }else{
+    document.getElementById('loginErr').classList.add('on');
+    document.getElementById('adminPass').value='';
+  }
+}
+function closeLogin(){
+  document.getElementById('loginModal').classList.add('hidden');
+  document.getElementById('adminUser').value='';
+  document.getElementById('adminPass').value='';
+  document.getElementById('loginErr').classList.remove('on');
+}
+document.getElementById('adminPass').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
+
+// ==================== PINS / RECENT ====================
+function togglePin(id, title){
+  if(!id)return;
+  const idx=S.pins.indexOf(id);
+  if(idx>-1)S.pins.splice(idx,1);
+  else S.pins.push(id);
+  localStorage.setItem('kb_pins',JSON.stringify(S.pins));
+  showToast(idx>-1?'Unpinned':'Pinned article ★','ok');
+  // re-render just the pin buttons
+  document.querySelectorAll(`.pin-btn`).forEach(btn=>{
+    const onclick=btn.getAttribute('onclick')||'';
+    if(onclick.includes(`'${id}'`)){
+      btn.classList.toggle('pinned',S.pins.includes(id));
+    }
+  });
+}
+function addRecent(page){
+  const r=S.recent;
+  const i=r.indexOf(page);
+  if(i>-1)r.splice(i,1);
+  r.unshift(page);
+  if(r.length>10)r.pop();
+  localStorage.setItem('kb_recent',JSON.stringify(r));
+}
+function adminEditFAQ(id){showToast('Admin edit UI coming soon — use import/export JSON to edit.','ok');}
+
+// ==================== TOAST ====================
+let toastTimer;
+function showToast(msg, type='ok'){
+  const t=document.getElementById('toast');
+  t.textContent=msg;
+  t.className='toast on '+(type||'');
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>{t.classList.remove('on');},2500);
+}
+
+// ==================== INIT ====================
+render('dashboard');
+</script>
+</body>
+</html>
